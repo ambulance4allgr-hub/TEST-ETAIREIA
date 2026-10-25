@@ -31,7 +31,7 @@ if "amb" not in st.session_state:
         st.session_state.amb[i] = {"name": NAMES[i-1], "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False}
 
 # ==========================================
-# ΑΡΧΙΚΗ ΣΕΛΙΔΑ (Μεγάλο και σταθερό κείμενο)
+# ΑΡΧΙΚΗ ΣΕΛΙΔΑ
 # ==========================================
 if menu == "🏠 Αρχική":
     st.markdown("<h1 style='text-align: center; color: #FF4B4B; font-size: 50px;'>🚑 Καλώς ήρθατε στην Εταιρεία μας</h1>", unsafe_allow_html=True)
@@ -131,7 +131,9 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
         notes = st.text_input("Σημειώσεις")
         
+        # Εδώ έγινε η διόρθωση. Αντί για if με κενά, ελέγχουμε αν είναι όλα συμπληρωμένα με ασφάλεια
         if st.form_submit_button("Καταχώρηση", type="primary"):
-            if patient and from_loc and to_loc:
+            is_valid = bool(patient) and bool(from_loc) and bool(to_loc)
+            
+            if is_valid:
                 trips = load_data()
-                new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc
