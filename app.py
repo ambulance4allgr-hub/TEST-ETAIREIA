@@ -30,33 +30,19 @@ if "amb" not in st.session_state:
     for i in range(1, 5):
         st.session_state.amb[i] = {"name": NAMES[i-1], "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False}
 
-# Συνάρτηση που εκτελείται ΜΟΛΙΣ πατηθεί το κουμπί
 def save_trip():
-    patient = st.session_state.t_patient
-    from_loc = st.session_state.t_from
-    to_loc = st.session_state.t_to
-    if patient and from_loc and to_loc:
+    p = st.session_state.t_patient
+    f_loc = st.session_state.t_from
+    t_loc = st.session_state.t_to
+    if p and f_loc and t_loc:
         trips = load_data()
-        new_trip = {
-            "id": str(uuid.uuid4()), 
-            "date": str(st.session_state.t_date), 
-            "time": st.session_state.t_time, 
-            "end": st.session_state.t_end, 
-            "patient": patient, 
-            "from": from_loc, 
-            "to": to_loc, 
-            "amb": st.session_state.t_amb, 
-            "notes": st.session_state.t_notes
-        }
+        new_trip = {"id": str(uuid.uuid4()), "date": str(st.session_state.t_date), "time": st.session_state.t_time, "end": st.session_state.t_end, "patient": p, "from": f_loc, "to": t_loc, "amb": st.session_state.t_amb, "notes": st.session_state.t_notes}
         trips.append(new_trip)
         save_data(trips)
         st.session_state.t_success = True
     else:
         st.session_state.t_success = False
 
-# ==========================================
-# ΑΡΧΙΚΗ ΣΕΛΙΔΑ
-# ==========================================
 if menu == "🏠 Αρχική":
     st.markdown("<h1 style='text-align: center; color: #FF4B4B; font-size: 50px;'>🚑 Καλώς ήρθατε στην Εταιρεία μας</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align: center; color: #555;'>Η Νούμερο 1 Επιλογή στην Άμεση Ανταπόκριση και τις Διακομιδές</h3>", unsafe_allow_html=True)
@@ -70,9 +56,6 @@ if menu == "🏠 Αρχική":
     st.write("---")
     st.success("👈 Χρησιμοποιήστε το μενού στα αριστερά για να μεταβείτε στις άλλες ενότητες.")
 
-# ==========================================
-# LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ
-# ==========================================
 elif menu == "🚑 Live Παρακολούθηση":
     st.title("🚑 Κέντρο Παρακολούθησης Ασθενοφόρων")
     @st.fragment(run_every=1.0)
@@ -129,15 +112,10 @@ elif menu == "🚑 Live Παρακολούθηση":
                             st.rerun()
     draw_ambulances()
 
-# ==========================================
-# ΠΡΟΓΡΑΜΜΑ ΔΙΑΚΟΜΙΔΩΝ
-# ==========================================
 elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
-    
     st.subheader("Καταχώρηση Νέας Διακομιδής")
     
-    # Φτιάχνουμε τα κουτάκια και τα συνδέουμε με το session_state
     st.text_input("Όνομα Ασθενούς", key="t_patient")
     st.date_input("Ημερομηνία", key="t_date")
     st.text_input("Ώρα Έναρξης", key="t_time")
@@ -147,11 +125,26 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.selectbox("Επιλογή Ασθενοφόρου", NAMES, key="t_amb")
     st.text_input("Σημειώσεις", key="t_notes")
     
-    # Το κουμπί καλεί την παραπάνω συνάρτηση
     st.button("Καταχώρηση", type="primary", on_click=save_trip)
     
-    # Έλεγχος επιτυχίας
     if st.session_state.get("t_success") == True:
         st.success("Η διακομιδή καταχωρήθηκε με επιτυχία!")
         st.session_state.t_success = None
-    elif st.sessi
+    elif st.session_state.get("t_success") == False:
+        st.error("Συμπλήρωσε Ασθενή, Από και Προς.")
+        st.session_state.t_success = None
+
+    st.divider()
+    current_trips = load_data()
+    
+    if not current_trips:
+        st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
+    else:
+        st.subheader("Πρόγραμμα ανά Ασθενοφόρο")
+        cols = st.columns(4)
+        
+        for idx, amb_name in enumerate(NAMES):
+            with cols[idx]:
+                st.markdown(f"### 🚑 {amb_name}")
+                amb_trips = [t for t in current_trips if t['amb'] == amb_name]
+                amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
