@@ -126,7 +126,6 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
 
     st.divider()
     
-    # Διαβάζουμε τα δεδομένα φρέσκα
     current_trips = load_data()
     
     if not current_trips:
@@ -138,14 +137,15 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         for idx, amb_name in enumerate(NAMES):
             with cols[idx]:
                 st.markdown(f"### 🚑 {amb_name}")
+                
+                # Βρίσκουμε τις διακομιδές ΜΟΝΟ για αυτό το ασθενοφόρο
                 amb_trips = [t for t in current_trips if t['amb'] == amb_name]
                 amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
                 
                 if not amb_trips:
                     st.write("Κενό.")
                 else:
-                    for trip in amb_trips:
-                        # Απλή, επίπεδη εμφάνιση για να μην σπάει
+                    # Χρησιμοποιούμε το index (θέση) για να σβήνουμε σωστά τη διακομιδή
+                    for i, trip in enumerate(amb_trips):
                         st.text(f"📅 {trip['date']}")
-                        st.text(f"🕒 {trip['time']} - {trip['end']}")
-                        st.text(f"👤 {trip['patient']}")
+                        st.text(f"🕒 {trip['time']} - {trip
