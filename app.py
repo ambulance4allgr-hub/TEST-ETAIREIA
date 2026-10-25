@@ -34,15 +34,12 @@ if menu == "🚑 Live Παρακολούθηση":
                 if not a["active"]:
                     c1, c2, c3, c4, c5, c6 = st.columns([1.5, 0.8, 1, 1, 0.8, 0.8])
                     with c1:
-                        # Εδώ αλλάζεις το όνομα
                         new_name = st.text_input("Όνομα", value=a["name"], key=f"name_{i}")
                     with c2:
-                        # Κουμπί για να "θυμάται" το πρόγραμμα το νέο όνομα
                         st.write("")
                         st.write("")
-                        if st.button("💾 Αποθ.", key=f"save_name_{i}", help="Αποθήκευση ονόματος"):
+                        if st.button("💾", key=f"save_name_{i}", help="Αποθήκευση ονόματος"):
                             a["name"] = new_name
-                            st.success("Αποθηκεύτηκε!")
                             st.rerun()
                     with c3:
                         a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="Ονόματα")
@@ -104,7 +101,6 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 from_loc = st.text_input("Από (Νοσοκομείο/Διεύθυνση)")
                 to_loc = st.text_input("Προς (Νοσοκομείο/Διεύθυνση)")
             with c3:
-                # Εδώ γράφεις ελεύθερα το όνομα του ασθενοφόρου
                 amb_choice = st.text_input("Ασθενοφόρο (Γράψε το όνομα)")
                 notes = st.text_input("Σημειώσεις (π.χ. Οξυγόνο, φορεία)")
                 
@@ -145,4 +141,7 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                     st.markdown(f"🏁 **Προς:** {trip['to']}")
                 with col4:
                     st.info(f"🚑 {trip['amb']}")
-                    if st.button("✅ Ολοκληρώθηκε", key=f"done_{idx}", use_container_width=True):
+                    btn_done = st.button("✅ Ολοκληρώθηκε", key=f"done_{idx}", use_container_width=True)
+                    if btn_done:
+                        st.session_state.trips.remove(trip)
+                        st.rerun()
