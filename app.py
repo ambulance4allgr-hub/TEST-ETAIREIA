@@ -30,6 +30,30 @@ if "amb" not in st.session_state:
     for i in range(1, 5):
         st.session_state.amb[i] = {"name": NAMES[i-1], "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False}
 
+# Συνάρτηση που εκτελείται ΜΟΛΙΣ πατηθεί το κουμπί
+def save_trip():
+    patient = st.session_state.t_patient
+    from_loc = st.session_state.t_from
+    to_loc = st.session_state.t_to
+    if patient and from_loc and to_loc:
+        trips = load_data()
+        new_trip = {
+            "id": str(uuid.uuid4()), 
+            "date": str(st.session_state.t_date), 
+            "time": st.session_state.t_time, 
+            "end": st.session_state.t_end, 
+            "patient": patient, 
+            "from": from_loc, 
+            "to": to_loc, 
+            "amb": st.session_state.t_amb, 
+            "notes": st.session_state.t_notes
+        }
+        trips.append(new_trip)
+        save_data(trips)
+        st.session_state.t_success = True
+    else:
+        st.session_state.t_success = False
+
 # ==========================================
 # ΑΡΧΙΚΗ ΣΕΛΙΔΑ
 # ==========================================
@@ -112,30 +136,22 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
     
     st.subheader("Καταχώρηση Νέας Διακομιδής")
-    # Χρησιμοποιούμε session_state για να καθαρίζουν τα πεδία μετά την καταχώρηση
-    if "p_name" not in st.session_state: st.session_state.p_name = ""
-    if "p_time" not in st.session_state: st.session_state.p_time = ""
-    if "p_end" not in st.session_state: st.session_state.p_end = ""
-    if "p_from" not in st.session_state: st.session_state.p_from = ""
-    if "p_to" not in st.session_state: st.session_state.p_to = ""
-    if "p_notes" not in st.session_state: st.session_state.p_notes = ""
-
-    patient = st.text_input("Όνομα Ασθενούς", value=st.session_state.p_name)
-    trip_date = st.date_input("Ημερομηνία")
-    trip_time = st.text_input("Ώρα Έναρξης", value=st.session_state.p_time)
-    trip_end = st.text_input("Ώρα Τέλους", value=st.session_state.p_end)
-    from_loc = st.text_input("Από", value=st.session_state.p_from)
-    to_loc = st.text_input("Προς", value=st.session_state.p_to)
-    amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
-    notes = st.text_input("Σημειώσεις", value=st.session_state.p_notes)
     
-    if st.button("Καταχώρηση", type="primary"):
-        if patient and from_loc and to_loc:
-            trips = load_data()
-            new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes}
-            trips.append(new_trip)
-            save_data(trips)
-            
-            # Καθαρίζουμε τα πεδία
-            st.session_state.p_name = ""
-            st.session_state.p_time = ""
+    # Φτιάχνουμε τα κουτάκια και τα συνδέουμε με το session_state
+    st.text_input("Όνομα Ασθενούς", key="t_patient")
+    st.date_input("Ημερομηνία", key="t_date")
+    st.text_input("Ώρα Έναρξης", key="t_time")
+    st.text_input("Ώρα Τέλους", key="t_end")
+    st.text_input("Από", key="t_from")
+    st.text_input("Προς", key="t_to")
+    st.selectbox("Επιλογή Ασθενοφόρου", NAMES, key="t_amb")
+    st.text_input("Σημειώσεις", key="t_notes")
+    
+    # Το κουμπί καλεί την παραπάνω συνάρτηση
+    st.button("Καταχώρηση", type="primary", on_click=save_trip)
+    
+    # Έλεγχος επιτυχίας
+    if st.session_state.get("t_success") == True:
+        st.success("Η διακομιδή καταχωρήθηκε με επιτυχία!")
+        st.session_state.t_success = None
+    elif st.sessi
