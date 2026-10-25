@@ -33,16 +33,16 @@ if "amb" not in st.session_state:
 if menu == "🏠 Αρχική":
     st.markdown("<h1 style='text-align: center; color: #FF4B4B;'>🚑 Καλώς ήρθατε στην Εταιρεία μας</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align: center;'>Πρωτοπόροι στις Διακομιδές και την Άμεση Ανταπόκριση</h3>", unsafe_allow_html=True)
-    st.info("Η εταιρεία μας δεσμεύεται να παρέχει τις πιο ασφαλείς, γρήγορες και αξιόπιστες υπηρεσίες διακομιδών. Με χρόνια εμπειρίας και έναν από τους πιο σύγχρονους στόλους ασθενοφόρων, είμαστε πάντα δίπλα σας.")
+    st.info("Η εταιρεία μας δεσμεύεται να παρέχει τις πιο ασφαλείς, γρήγορες και αξιόπιστες υπηρεσίες διακομιδών.")
     st.write("---")
     st.subheader("Γιατί να μας επιλέξετε;")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.info("⚡ **Άμεση Ανταπόκριση**\n\nΕίμαστε έτοιμοι να ανταποκριθούμε στο περιστατικό σας άμεσα. Ο χρόνος για εμάς είναι ζωή.")
+        st.info("⚡ **Άμεση Ανταπόκριση**\n\nΕίμαστε έτοιμοι να ανταποκριθούμε στο περιστατικό σας άμεσα.")
     with col2:
-        st.info("🚑 **Σύγχρονος Στόλος**\n\nΔιαθέτουμε πλήρως εξοπλισμένα ασθενοφόρα, τηρώντας όλα τα πρότυπα ασφαλείας και υγιεινής.")
+        st.info("🚑 **Σύγχρονος Στόλος**\n\nΔιαθέτουμε πλήρως εξοπλισμένα ασθενοφόρα, τηρώντας όλα τα πρότυπα ασφαλείας.")
     with col3:
-        st.info("👨‍⚕️ **Έμπειρο Προσωπικό**\n\nΤο πλήρωμά μας αποτελείται από έμπειρους διασώστες και οδηγούς, έτοιμους να προσφέρουν τη φροντίδα που αξίζετε.")
+        st.info("👨‍⚕️ **Έμπειρο Προσωπικό**\n\nΤο πλήρωμά μας αποτελείται από έμπειρους διασώστες και οδηγούς.")
 
 elif menu == "🚑 Live Παρακολούθηση":
     st.title("🚑 Κέντρο Παρακολούθησης Ασθενοφόρων")
@@ -105,27 +105,32 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     
     trips = load_data()
 
-    st.subheader("Καταχώρηση Νέας Διακομιδής")
-    patient = st.text_input("Όνομα Ασθενούς")
-    trip_date = st.date_input("Ημερομηνία")
-    trip_time = st.text_input("Ώρα Έναρξης (π.χ. 14:30)")
-    trip_end = st.text_input("Ώρα Τέλους (π.χ. 15:15)")
-    from_loc = st.text_input("Από")
-    to_loc = st.text_input("Προς")
-    amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
-    notes = st.text_input("Σημειώσεις")
-    
-    if st.button("Καταχώρηση", type="primary"):
-        if patient and from_loc and to_loc:
-            new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes}
-            trips.append(new_trip)
-            save_data(trips)
-            st.success(f"Η διακομιδή για το {amb_choice} καταχωρήθηκε!")
-            st.rerun()
-        else:
-            st.error("Συμπλήρωσε τουλάχιστον Ασθενή, Από και Προς.")
+    # Χρήση φόρμας για να καθαρίζουν τα πεδία αυτόματα με το clear_on_submit
+    with st.form("trip_form", clear_on_submit=True):
+        st.subheader("Καταχώρηση Νέας Διακομιδής")
+        patient = st.text_input("Όνομα Ασθενούς")
+        trip_date = st.date_input("Ημερομηνία")
+        trip_time = st.text_input("Ώρα Έναρξης (π.χ. 14:30)")
+        trip_end = st.text_input("Ώρα Τέλους (π.χ. 15:15)")
+        from_loc = st.text_input("Από")
+        to_loc = st.text_input("Προς")
+        amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
+        notes = st.text_input("Σημειώσεις")
+        
+        if st.form_submit_button("Καταχώρηση", type="primary"):
+            if patient and from_loc and to_loc:
+                new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes}
+                trips.append(new_trip)
+                save_data(trips)
+                st.success(f"Η διακομιδή για το {amb_choice} καταχωρήθηκε!")
+                # Δεν βάζουμε st.rerun() εδώ γιατί η φόρμα το κάνει μόνη της και μπερδεύει το πρόγραμμα
+            else:
+                st.error("Συμπλήρωσε τουλάχιστον Ασθενή, Από και Προς.")
 
     st.divider()
+    
+    # Επειδή η φόρμα δεν κάνει rerun, φορτώνουμε τα δεδομένα ξανά για να δείξει τη νέα διακομιδή αμέσως
+    trips = load_data()
     
     if not trips:
         st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
@@ -142,7 +147,4 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 if not amb_trips:
                     st.write("Δεν υπάρχουν ραντεβού.")
                 else:
-                    for trip in amb_trips:
-                        # Όλα τα κείμενα ενώθηκαν για να μην σπάει η στοίχιση
-                        st.markdown(f"**📅 {trip['date']}**")
-                        st.markdown(f"🕒 **{trip['time']} - {trip['end']}**")
+                    for trip
