@@ -11,7 +11,15 @@ menu = st.sidebar.radio("Επιλέξτε Ενότητα:", ["🏠 Αρχική"
 if "amb" not in st.session_state:
     st.session_state.amb = {}
     for i in range(1, 5):
-        st.session_state.amb[i] = {"name": f"Ασθενοφόρο {i}", "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False}
+        st.session_state.amb[i] = {
+            "name": f"Ασθενοφόρο {i}", 
+            "crew": "", 
+            "origin": "", 
+            "dest": "", 
+            "target": None, 
+            "total_mins": 0, 
+            "active": False
+        }
 
 if "trips" not in st.session_state:
     st.session_state.trips = []
@@ -41,6 +49,7 @@ if menu == "🏠 Αρχική":
 
 elif menu == "🚑 Live Παρακολούθηση":
     st.title("🚑 Κέντρο Παρακολούθησης Ασθενοφόρων")
+    
     @st.fragment(run_every=1.0)
     def draw_ambulances():
         for i in range(1, 5):
@@ -103,8 +112,16 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
     
     with st.form("trip_form", clear_on_submit=True):
-        patient = st.text_input("Όνομα Ασθενούς")
-        trip_time = st.text_input("Ώρα (π.χ. 14:30)")
+        st.subheader("Στοιχεία Διακομιδής")
+        col_a, col_b = st.columns(2)
+        with col_a:
+            patient = st.text_input("Όνομα Ασθενούς")
+            trip_date = st.date_input("Ημερομηνία")
+        with col_b:
+            trip_time = st.text_input("Ώρα Έναρξης (π.χ. 14:30)")
+            trip_end = st.text_input("Ώρα Τέλους (π.χ. 15:15)")
+            
+        st.divider()
         from_loc = st.text_input("Από (Νοσοκομείο/Διεύθυνση)")
         to_loc = st.text_input("Προς (Νοσοκομείο/Διεύθυνση)")
         amb_choice = st.text_input("Ασθενοφόρο (Γράψε το όνομα)")
@@ -114,7 +131,9 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
             if patient and from_loc and to_loc and amb_choice:
                 st.session_state.trips.append({
                     "id": str(uuid.uuid4()),
+                    "date": str(trip_date),
                     "time": trip_time, 
+                    "end": trip_end,
                     "patient": patient, 
                     "from": from_loc, 
                     "to": to_loc, 
@@ -123,17 +142,4 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 })
                 st.success("Η διακομιδή καταχωρήθηκε!")
             else:
-                st.error("Συμπλήρωσε όλα τα πεδία.")
-
-    st.divider()
-    
-    if not st.session_state.trips:
-        st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
-    else:
-        st.subheader("Ενεργές Διακομιδές")
-        sorted_trips = sorted(st.session_state.trips, key=lambda x: x['time'])
-        
-        for trip in sorted_trips:
-            with st.container(border=True):
-                st.write(f"🕒 **Ώρα:** {trip['time']}")
-                st.write(f"👤 **Ασθενής:** {trip['patient']}")
+                st.error("Συμπλήρωσε το
