@@ -143,9 +143,8 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                         n_text = trip.get('notes')
                         if n_text: st.text(f"📝 {n_text}")
                             
+                        # Χρησιμοποιούμε το ID της διακομιδής ως κλειδί για να μην μπερδεύεται
                         btn_key = "del_" + str(trip['id'])
                         
                         if st.button("🗑️ Διαγραφή", key=btn_key):
-                            new_trips = [t for t in current_trips if str(t['id']) != str(trip['id'])]
-                            save_data(new_trips)
-                            st.rer
+                            new_trips = [t for t in current_trips if str(t['id']) != str(t
