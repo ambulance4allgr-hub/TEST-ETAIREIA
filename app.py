@@ -2,18 +2,36 @@ import streamlit as st
 import time
 from datetime import datetime, timedelta
 import uuid
+import pandas as pd
+import os
 
 st.set_page_config(page_title="Κέντρο Ελέγχου Εταιρείας", layout="wide")
 st.sidebar.title("Μενού Εφαρμογής")
 menu = st.sidebar.radio("Επιλέξτε Ενότητα:", ["🏠 Αρχική", "🚑 Live Παρακολούθηση", "📋 Πρόγραμμα Διακομιδών"])
 
+NAMES = ["Τ12", "Τ16", "Τ16Β", "Τ16Δ"]
+FILE_NAME = "trips.csv"
+
+# Συνάρτηση που διαβάζει τις διακομιδές από το αρχείο
+def load_data():
+    if os.path.exists(FILE_NAME):
+        try:
+            df = pd.read_csv(FILE_NAME)
+            # Μετατροπή σε λίστα από λεξικά
+            return df.fillna("").to_dict('records')
+        except:
+            return []
+    return []
+
+# Συνάρτηση που γράφει τις διακομιδές στο αρχείο
+def save_data(trips):
+    df = pd.DataFrame(trips)
+    df.to_csv(FILE_NAME, index=False)
+
 if "amb" not in st.session_state:
     st.session_state.amb = {}
     for i in range(1, 5):
-        st.session_state.amb[i] = {"name": f"Ασθενοφόρο {i}", "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False}
-
-if "trips" not in st.session_state:
-    st.session_state.trips = []
+        st.session_state.amb[i] = {"name": NAMES[i-1], "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False}
 
 if menu == "🏠 Αρχική":
     st.markdown("<h1 style='text-align: center; color: #FF4B4B;'>🚑 Καλώς ήρθατε στην Εταιρεία μας</h1>", unsafe_allow_html=True)
@@ -37,23 +55,18 @@ elif menu == "🚑 Live Παρακολούθηση":
             a = st.session_state.amb[i]
             with st.container(border=True):
                 if not a["active"]:
-                    c1, c2, c3, c4, c5, c6 = st.columns([1.5, 0.8, 1, 1, 0.8, 0.8])
+                    c1, c2, c3, c4, c5 = st.columns([1, 1, 1, 1, 0.8])
                     with c1:
-                        new_name = st.text_input("Όνομα", value=a["name"], key=f"name_{i}")
+                        a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="Ονόματα")
                     with c2:
-                        st.write("")
-                        st.write("")
-                        if st.button("💾", key=f"save_name_{i}", help="Αποθήκευση"):
-                            a["name"] = new_name
-                            st.rerun()
-                    with c3:
-                        a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}")
-                    with c4:
                         a["origin"] = st.text_input("Από πού", key=f"o{i}")
-                    with c5:
+                    with c3:
                         a["dest"] = st.text_input("Πού", key=f"d{i}")
-                    with c6:
+                    with c4:
                         mins = st.number_input("Λεπτά", min_value=1, max_value=180, value=15, key=f"m{i}")
+                    with c5:
+                        st.write("")
+                        st.write("")
                         if st.button("▶", key=f"btn{i}", use_container_width=True, type="primary"):
                             if a["origin"] and a["dest"]:
                                 a["total_mins"] = mins
@@ -62,10 +75,11 @@ elif menu == "🚑 Live Παρακολούθηση":
                                 st.rerun()
                             else:
                                 st.warning("Συμπλήρωσε διαδρομή.")
+                    st.markdown(f"### 🚑 {a['name']}")
                 else:
+                    st.markdown(f"### 🚑 {a['name']}")
                     col_info, col_prog, col_timer, col_btn = st.columns([2, 1.5, 1.2, 0.8])
                     with col_info:
-                        st.markdown(f"**🚑 {a['name']}**")
                         if a["crew"]:
                             st.caption(f"👥 {a['crew']}")
                         st.caption(f"📍 {a['origin']} ➔ {a['dest']}")
@@ -91,36 +105,50 @@ elif menu == "🚑 Live Παρακολούθηση":
 
 elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
+    
+    # Φορτώνουμε τις αποθηκευμένες διακομιδές
+    trips = load_data()
+
     with st.form("trip_form", clear_on_submit=True):
+        st.subheader("Καταχώρηση Νέας Διακομιδής")
         patient = st.text_input("Όνομα Ασθενούς")
         trip_date = st.date_input("Ημερομηνία")
         trip_time = st.text_input("Ώρα Έναρξης (π.χ. 14:30)")
         trip_end = st.text_input("Ώρα Τέλους (π.χ. 15:15)")
         from_loc = st.text_input("Από (Νοσοκομείο/Διεύθυνση)")
         to_loc = st.text_input("Προς (Νοσοκομείο/Διεύθυνση)")
-        amb_choice = st.text_input("Ασθενοφόρο (Γράψε το όνομα)")
+        
+        # Επιλογή ασθενοφόρου από τη λίστα
+        amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
+        
         notes = st.text_input("Σημειώσεις")
+        
         if st.form_submit_button("Καταχώρηση", type="primary"):
-            if patient and from_loc and to_loc and amb_choice:
-                new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes}
-                st.session_state.trips.append(new_trip)
-                st.success("Η διακομιδή καταχωρήθηκε!")
+            if patient and from_loc and to_loc:
+                new_trip = {
+                    "id": str(uuid.uuid4()), 
+                    "date": str(trip_date), 
+                    "time": trip_time, 
+                    "end": trip_end, 
+                    "patient": patient, 
+                    "from": from_loc, 
+                    "to": to_loc, 
+                    "amb": amb_choice, 
+                    "notes": notes
+                }
+                trips.append(new_trip)
+                save_data(trips) # Αποθήκευση στο αρχείο CSV
+                st.success(f"Η διακομιδή για το {amb_choice} αποθηκεύτηκε μόνιμα!")
+                st.rerun()
             else:
-                st.error("Συμπλήρωσε όλα τα πεδία.")
+                st.error("Συμπλήρωσε τουλάχιστον Ασθενή, Από και Προς.")
+
     st.divider()
-    if not st.session_state.trips:
+    
+    if not trips:
         st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
     else:
-        st.subheader("Ενεργές Διακομιδές")
-        sorted_trips = sorted(st.session_state.trips, key=lambda x: (x['date'], x['time']))
-        for trip in sorted_trips:
-            with st.container(border=True):
-                st.markdown(f"### 🕒 {trip['date']} | {trip['time']} - {trip['end']}")
-                st.markdown(f"**👤 Ασθενής:** {trip['patient']}")
-                st.markdown(f"**🏥 Από:** {trip['from']}")
-                st.markdown(f"**🏁 Προς:** {trip['to']}")
-                st.markdown(f"**🚑 Ασθενοφόρο:** {trip['amb']}")
-                if trip['notes']: st.caption(f"📝 Σημειώσεις: {trip['notes']}")
-                if st.button("✅ Ολοκληρώθηκε", key=f"del_{trip['id']}", use_container_width=True):
-                    st.session_state.trips = [t for t in st.session_state.trips if t['id'] != trip['id']]
-                    st.r
+        st.subheader("Πρόγραμμα ανά Ασθενοφόρο")
+        
+        # Φτιάχνουμε 4 στήλες (μία για κάθε ασθενοφόρο)
+        cols = st.
