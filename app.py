@@ -10,9 +10,8 @@ st.sidebar.title("Μενού Εφαρμογής")
 menu = st.sidebar.radio("Επιλέξτε Ενότητα:", ["🏠 Αρχική", "🚑 Live Παρακολούθηση", "📋 Πρόγραμμα Διακομιδών"])
 
 NAMES = ["Τ12", "Τ16", "Τ16Β", "Τ16Δ"]
-FILE_NAME = "trips.json" # Αλλάξαμε το αρχείο σε JSON για να μην μπερδεύεται
+FILE_NAME = "trips.json"
 
-# Συνάρτηση που διαβάζει τις διακομιδές
 def load_data():
     if os.path.exists(FILE_NAME):
         try:
@@ -22,7 +21,6 @@ def load_data():
             return []
     return []
 
-# Συνάρτηση που γράφει τις διακομιδές
 def save_data(trips):
     with open(FILE_NAME, "w", encoding="utf-8") as f:
         json.dump(trips, f, ensure_ascii=False, indent=4)
@@ -119,17 +117,7 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     
     if st.button("Καταχώρηση", type="primary"):
         if patient and from_loc and to_loc:
-            new_trip = {
-                "id": str(uuid.uuid4()), 
-                "date": str(trip_date), 
-                "time": trip_time, 
-                "end": trip_end, 
-                "patient": patient, 
-                "from": from_loc, 
-                "to": to_loc, 
-                "amb": amb_choice, 
-                "notes": notes
-            }
+            new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes}
             trips.append(new_trip)
             save_data(trips)
             st.success(f"Η διακομιδή για το {amb_choice} καταχωρήθηκε!")
@@ -148,9 +136,13 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         for idx, amb_name in enumerate(NAMES):
             with cols[idx]:
                 st.markdown(f"### 🚑 {amb_name}")
-                
                 amb_trips = [t for t in trips if t['amb'] == amb_name]
                 amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
                 
                 if not amb_trips:
-                    st.write("Δε
+                    st.write("Δεν υπάρχουν ραντεβού.")
+                else:
+                    for trip in amb_trips:
+                        # Όλα τα κείμενα ενώθηκαν για να μην σπάει η στοίχιση
+                        st.markdown(f"**📅 {trip['date']}**")
+                        st.markdown(f"🕒 **{trip['time']} - {trip['end']}**")
