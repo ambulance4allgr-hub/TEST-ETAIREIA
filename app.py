@@ -52,7 +52,6 @@ elif menu == "🚑 Live Παρακολούθηση":
             a = st.session_state.amb[i]
             with st.container(border=True):
                 if not a["active"]:
-                    # Τα κουτάκια είναι ακριβώς όπως τα ζήτησες
                     c1, c2, c3, c4, c5 = st.columns([1, 1, 1, 1, 0.8])
                     with c1:
                         a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="Ονόματα")
@@ -106,36 +105,36 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     
     trips = load_data()
 
-    with st.form("trip_form", clear_on_submit=True):
-        st.subheader("Καταχώρηση Νέας Διακομιδής")
-        patient = st.text_input("Όνομα Ασθενούς")
-        trip_date = st.date_input("Ημερομηνία")
-        trip_time = st.text_input("Ώρα Έναρξης (π.χ. 14:30)")
-        trip_end = st.text_input("Ώρα Τέλους (π.χ. 15:15)")
-        from_loc = st.text_input("Από")
-        to_loc = st.text_input("Προς")
-        amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
-        notes = st.text_input("Σημειώσεις")
-        
-        if st.form_submit_button("Καταχώρηση", type="primary"):
-            if patient and from_loc and to_loc:
-                new_trip = {
-                    "id": str(uuid.uuid4()), 
-                    "date": str(trip_date), 
-                    "time": trip_time, 
-                    "end": trip_end, 
-                    "patient": patient, 
-                    "from": from_loc, 
-                    "to": to_loc, 
-                    "amb": amb_choice, 
-                    "notes": notes
-                }
-                trips.append(new_trip)
-                save_data(trips)
-                st.success(f"Η διακομιδή για το {amb_choice} αποθηκεύτηκε μόνιμα!")
-                st.rerun()
-            else:
-                st.error("Συμπλήρωσε τουλάχιστον Ασθενή, Από και Προς.")
+    # Βγάλαμε το st.form για να δουλεύει το κουμπί σωστά
+    st.subheader("Καταχώρηση Νέας Διακομιδής")
+    patient = st.text_input("Όνομα Ασθενούς")
+    trip_date = st.date_input("Ημερομηνία")
+    trip_time = st.text_input("Ώρα Έναρξης (π.χ. 14:30)")
+    trip_end = st.text_input("Ώρα Τέλους (π.χ. 15:15)")
+    from_loc = st.text_input("Από")
+    to_loc = st.text_input("Προς")
+    amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
+    notes = st.text_input("Σημειώσεις")
+    
+    if st.button("Καταχώρηση", type="primary"):
+        if patient and from_loc and to_loc:
+            new_trip = {
+                "id": str(uuid.uuid4()), 
+                "date": str(trip_date), 
+                "time": trip_time, 
+                "end": trip_end, 
+                "patient": patient, 
+                "from": from_loc, 
+                "to": to_loc, 
+                "amb": amb_choice, 
+                "notes": notes
+            }
+            trips.append(new_trip)
+            save_data(trips)
+            st.success(f"Η διακομιδή για το {amb_choice} καταχωρήθηκε!")
+            st.rerun()
+        else:
+            st.error("Συμπλήρωσε τουλάχιστον Ασθενή, Από και Προς.")
 
     st.divider()
     
@@ -151,3 +150,9 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 
                 amb_trips = [t for t in trips if t['amb'] == amb_name]
                 amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
+                
+                if not amb_trips:
+                    st.write("Δεν υπάρχουν ραντεβού.")
+                else:
+                    for trip in amb_trips:
+                        st.ma
