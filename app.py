@@ -30,11 +30,34 @@ if "amb" not in st.session_state:
     for i in range(1, 5):
         st.session_state.amb[i] = {"name": NAMES[i-1], "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False}
 
+# ==========================================
+# ΑΡΧΙΚΗ ΣΕΛΙΔΑ (Μεγάλο και σταθερό κείμενο)
+# ==========================================
 if menu == "🏠 Αρχική":
-    st.markdown("<h1 style='text-align: center; color: #FF4B4B;'>🚑 Καλώς ήρθατε στην Εταιρεία μας</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center;'>Πρωτοπόροι στις Διακομιδές και την Άμεση Ανταπόκριση</h3>", unsafe_allow_html=True)
-    st.info("Η εταιρεία μας δεσμεύεται να παρέχει τις πιο ασφαλείς, γρήγορες και αξιόπιστες υπηρεσίες διακομιδών.")
+    st.markdown("<h1 style='text-align: center; color: #FF4B4B; font-size: 50px;'>🚑 Καλώς ήρθατε στην Εταιρεία μας</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #555;'>Η Νούμερο 1 Επιλογή στην Άμεση Ανταπόκριση και τις Διακομιδές</h3>", unsafe_allow_html=True)
+    st.write("---")
+    
+    st.markdown("""
+    ### 🏆 Η Αριστεία είναι ο Πρότυπό μας
+    
+    Στην **Εταιρεία μας**, δεν κάνουμε απλώς τη δουλειά μας· θέτουμε τα πρότυπα της αγοράς. Είμαστε περήφανοι που θεωρούμαστε οι **απόλυτοι ηγέτες** στον τομέα των υπηρεσιών υγείας και διακομιδών, προσφέροντας ένα επίπεδο φροντίδας και ασφάλειας που ξεπερνά κάθε προσδοκία.
+    
+    Διαθέτουμε τον **πιο σύγχρονο και άρτια εξοπλισμένο στόλο ασθενοφόρων** στην περιοχή. Κάθε όχημά μας είναι ένα κινούμενο κέντρο εντατικής φροντίδας, εξοπλισμένο με την τελευταία λέξη της τεχνολογίας, διασφαλίζοντας ότι οι ασθενείς μας λαμβάνουν την καλύτερη δυνατή υποστήριξη κατά τη μεταφορά τους.
+    
+    Πίσω από το τιμόνι και δίπλα σε κάθε ασθενή, βρίσκονται τα **πιο έμπειρα και καταρτισμένα πληρώματα**. Οι διασώστες και οι οδηγοί μας δεν είναι απλοί εργαζόμενοι· είναι αφοσιωμένοι επαγγελματίες που αντιμετωπίζουν κάθε περιστατικό με τον μέγιστο σεβασμό, ψυχραιμία και επαγγελματισμό. 
+    
+    Η δέσμευσή μας είναι απέναντι στη ζωή και στην υγεία. Γι' αυτό και λειτουργούμε **24 ώρες το 24ωρο, 7 ημέρες την εβδομάδα, 365 ημέρες τον χρόνο**. Όταν μας χρειάζεστε, είμαστε εκεί. Άμεσα, αξιόπιστα και με απόλυτη επιτυχία.
+    
+    *Επιλέξτε μας με κλειστά μάτια. Η ασφάλεια και η υγεία σας είναι η δική μας προτεραιότητα.*
+    """)
+    
+    st.write("---")
+    st.success("👈 Χρησιμοποιήστε το μενού στα αριστερά για να μεταβείτε στην Παρακολούθηση των Ασθενοφόρων ή στο Πρόγραμμα Διακομιδών.")
 
+# ==========================================
+# LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ
+# ==========================================
 elif menu == "🚑 Live Παρακολούθηση":
     st.title("🚑 Κέντρο Παρακολούθησης Ασθενοφόρων")
     @st.fragment(run_every=1.0)
@@ -91,6 +114,9 @@ elif menu == "🚑 Live Παρακολούθηση":
                             st.rerun()
     draw_ambulances()
 
+# ==========================================
+# ΠΡΟΓΡΑΜΜΑ ΔΙΑΚΟΜΙΔΩΝ
+# ==========================================
 elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
     
@@ -108,43 +134,4 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         if st.form_submit_button("Καταχώρηση", type="primary"):
             if patient and from_loc and to_loc:
                 trips = load_data()
-                new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes}
-                trips.append(new_trip)
-                save_data(trips)
-                st.success(f"Καταχωρήθηκε για το {amb_choice}!")
-            else:
-                st.error("Συμπλήρωσε Ασθενή, Από και Προς.")
-
-    st.divider()
-    current_trips = load_data()
-    
-    if not current_trips:
-        st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
-    else:
-        st.subheader("Πρόγραμμα ανά Ασθενοφόρο")
-        cols = st.columns(4)
-        
-        for idx, amb_name in enumerate(NAMES):
-            with cols[idx]:
-                st.markdown(f"### 🚑 {amb_name}")
-                amb_trips = [t for t in current_trips if t['amb'] == amb_name]
-                amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
-                
-                if not amb_trips:
-                    st.write("Κενό.")
-                else:
-                    for trip in amb_trips:
-                        st.text(f"📅 {trip['date']}")
-                        st.text(f"🕒 {trip['time']} - {trip['end']}")
-                        st.text(f"👤 {trip['patient']}")
-                        st.text(f"📍 Από: {trip['from']}")
-                        st.text(f"🏁 Προς: {trip['to']}")
-                        
-                        n_text = trip.get('notes')
-                        if n_text: st.text(f"📝 {n_text}")
-                            
-                        # Χρησιμοποιούμε το ID της διακομιδής ως κλειδί για να μην μπερδεύεται
-                        btn_key = "del_" + str(trip['id'])
-                        
-                        if st.button("🗑️ Διαγραφή", key=btn_key):
-                            new_trips = [t for t in current_trips if str(t['id']) != str(t
+                new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc
