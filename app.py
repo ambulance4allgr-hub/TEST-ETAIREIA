@@ -12,18 +12,15 @@ menu = st.sidebar.radio("Επιλέξτε Ενότητα:", ["🏠 Αρχική"
 NAMES = ["Τ12", "Τ16", "Τ16Β", "Τ16Δ"]
 FILE_NAME = "trips.csv"
 
-# Συνάρτηση που διαβάζει τις διακομιδές από το αρχείο
 def load_data():
     if os.path.exists(FILE_NAME):
         try:
             df = pd.read_csv(FILE_NAME)
-            # Μετατροπή σε λίστα από λεξικά
             return df.fillna("").to_dict('records')
         except:
             return []
     return []
 
-# Συνάρτηση που γράφει τις διακομιδές στο αρχείο
 def save_data(trips):
     df = pd.DataFrame(trips)
     df.to_csv(FILE_NAME, index=False)
@@ -106,7 +103,6 @@ elif menu == "🚑 Live Παρακολούθηση":
 elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
     
-    # Φορτώνουμε τις αποθηκευμένες διακομιδές
     trips = load_data()
 
     with st.form("trip_form", clear_on_submit=True):
@@ -117,10 +113,7 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         trip_end = st.text_input("Ώρα Τέλους (π.χ. 15:15)")
         from_loc = st.text_input("Από (Νοσοκομείο/Διεύθυνση)")
         to_loc = st.text_input("Προς (Νοσοκομείο/Διεύθυνση)")
-        
-        # Επιλογή ασθενοφόρου από τη λίστα
         amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
-        
         notes = st.text_input("Σημειώσεις")
         
         if st.form_submit_button("Καταχώρηση", type="primary"):
@@ -137,7 +130,7 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                     "notes": notes
                 }
                 trips.append(new_trip)
-                save_data(trips) # Αποθήκευση στο αρχείο CSV
+                save_data(trips)
                 st.success(f"Η διακομιδή για το {amb_choice} αποθηκεύτηκε μόνιμα!")
                 st.rerun()
             else:
@@ -149,6 +142,11 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
     else:
         st.subheader("Πρόγραμμα ανά Ασθενοφόρο")
+        cols = st.columns(4)
         
-        # Φτιάχνουμε 4 στήλες (μία για κάθε ασθενοφόρο)
-        cols = st.
+        for idx, amb_name in enumerate(NAMES):
+            with cols[idx]:
+                st.markdown(f"### 🚑 {amb_name}")
+                
+                amb_trips = [t for t in trips if t['amb'] == amb_name]
+                amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
