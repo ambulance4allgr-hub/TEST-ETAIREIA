@@ -32,16 +32,25 @@ if menu == "🚑 Live Παρακολούθηση":
             a = st.session_state.amb[i]
             with st.container(border=True):
                 if not a["active"]:
-                    c1, c2, c3, c4, c5 = st.columns([1.2, 1.2, 1, 1, 0.8])
+                    c1, c2, c3, c4, c5, c6 = st.columns([1.5, 0.8, 1, 1, 0.8, 0.8])
                     with c1:
-                        a["name"] = st.text_input("Όνομα", value=a["name"], key=f"name_{i}")
+                        # Εδώ αλλάζεις το όνομα
+                        new_name = st.text_input("Όνομα", value=a["name"], key=f"name_{i}")
                     with c2:
-                        a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="Ονόματα")
+                        # Κουμπί για να "θυμάται" το πρόγραμμα το νέο όνομα
+                        st.write("")
+                        st.write("")
+                        if st.button("💾 Αποθ.", key=f"save_name_{i}", help="Αποθήκευση ονόματος"):
+                            a["name"] = new_name
+                            st.success("Αποθηκεύτηκε!")
+                            st.rerun()
                     with c3:
-                        a["origin"] = st.text_input("Από πού", key=f"o{i}", placeholder="π.χ. Αγία Όλγα")
+                        a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="Ονόματα")
                     with c4:
-                        a["dest"] = st.text_input("Πού", key=f"d{i}", placeholder="π.χ. Ευαγγελισμός")
+                        a["origin"] = st.text_input("Από πού", key=f"o{i}", placeholder="π.χ. Αγία Όλγα")
                     with c5:
+                        a["dest"] = st.text_input("Πού", key=f"d{i}", placeholder="π.χ. Ευαγγελισμός")
+                    with c6:
                         mins = st.number_input("Λεπτά", min_value=1, max_value=180, value=15, key=f"m{i}")
                         if st.button("▶", key=f"btn{i}", use_container_width=True, type="primary"):
                             if a["origin"] and a["dest"]:
@@ -85,7 +94,6 @@ if menu == "🚑 Live Παρακολούθηση":
 elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
     
-    # Φόρμα προσθήκης νέας διακομιδής
     with st.expander("➕ Προσθήκη Νέας Διακομιδής", expanded=True):
         with st.form("new_trip_form", clear_on_submit=True):
             c1, c2, c3 = st.columns(3)
@@ -96,12 +104,13 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 from_loc = st.text_input("Από (Νοσοκομείο/Διεύθυνση)")
                 to_loc = st.text_input("Προς (Νοσοκομείο/Διεύθυνση)")
             with c3:
-                amb_choice = st.selectbox("Ασθενοφόρο", [f"Ασθενοφόρο {i}" for i in range(1, 5)])
+                # Εδώ γράφεις ελεύθερα το όνομα του ασθενοφόρου
+                amb_choice = st.text_input("Ασθενοφόρο (Γράψε το όνομα)")
                 notes = st.text_input("Σημειώσεις (π.χ. Οξυγόνο, φορεία)")
                 
             submitted = st.form_submit_button("Καταχώρηση", type="primary")
             if submitted:
-                if patient and from_loc and to_loc:
+                if patient and from_loc and to_loc and amb_choice:
                     st.session_state.trips.append({
                         "time": trip_time,
                         "patient": patient,
@@ -112,17 +121,14 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                     })
                     st.success("Η διακομιδή καταχωρήθηκε!")
                 else:
-                    st.error("Συμπλήρωσε τουλάχιστον: Ασθενή, Από και Προς.")
+                    st.error("Συμπλήρωσε τουλάχιστον: Ασθενή, Από, Προς και Ασθενοφόρο.")
 
     st.divider()
     
-    # Εμφάνιση των διακομιδών
     if not st.session_state.trips:
         st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
     else:
         st.subheader("Ενεργές Διακομιδές")
-        
-        # Ταξινόμηση με βάση την ώρα
         sorted_trips = sorted(st.session_state.trips, key=lambda x: x['time'])
         
         for idx, trip in enumerate(sorted_trips):
@@ -140,6 +146,3 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 with col4:
                     st.info(f"🚑 {trip['amb']}")
                     if st.button("✅ Ολοκληρώθηκε", key=f"done_{idx}", use_container_width=True):
-                        # Αφαίρεση της συγκεκριμένης διακομιδής
-                        st.session_state.trips.remove(trip)
-                        st.rerun()
