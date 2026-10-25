@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 from datetime import datetime, timedelta
+import uuid
 
 st.set_page_config(page_title="Κέντρο Ελέγχου Εταιρείας", layout="wide")
 
@@ -99,7 +100,6 @@ elif menu == "🚑 Live Παρακολούθηση":
 elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
     
-    # Εδώ πρόσθεσα ξανά το "Προς" για να φαίνεται ο προορισμός
     patient = st.text_input("Όνομα Ασθενούς")
     trip_time = st.text_input("Ώρα (π.χ. 14:30)")
     from_loc = st.text_input("Από (Νοσοκομείο/Διεύθυνση)")
@@ -109,7 +109,17 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     
     if st.button("Καταχώρηση", type="primary"):
         if patient and from_loc and to_loc and amb_choice:
-            st.session_state.trips.append({"time": trip_time, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes})
+            # Δίνουμε ένα μοναδικό ID σε κάθε διακομιδή για να σβήνεται σωστά
+            trip_id = str(uuid.uuid4())
+            st.session_state.trips.append({
+                "id": trip_id,
+                "time": trip_time, 
+                "patient": patient, 
+                "from": from_loc, 
+                "to": to_loc, 
+                "amb": amb_choice, 
+                "notes": notes
+            })
             st.success("Η διακομιδή καταχωρήθηκε!")
             st.rerun()
         else:
@@ -122,13 +132,10 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     else:
         st.subheader("Ενεργές Διακομιδές")
         sorted_trips = sorted(st.session_state.trips, key=lambda x: x['time'])
-        for idx, trip in enumerate(sorted_trips):
+        
+        for trip in sorted_trips:
             with st.container(border=True):
                 col1, col2, col3, col4 = st.columns([1, 3, 3, 1.5])
                 with col1:
                     st.markdown(f"### 🕒 {trip['time']}")
                 with col2:
-                    st.markdown(f"**👤 {trip['patient']}**")
-                    st.caption(f"📝 {trip['notes']}")
-                with col3:
-                    st.markdown(f"🏥 **Από:** {trip['from']}")
