@@ -137,15 +137,15 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         for idx, amb_name in enumerate(NAMES):
             with cols[idx]:
                 st.markdown(f"### 🚑 {amb_name}")
-                
-                # Βρίσκουμε τις διακομιδές ΜΟΝΟ για αυτό το ασθενοφόρο
                 amb_trips = [t for t in current_trips if t['amb'] == amb_name]
                 amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
                 
                 if not amb_trips:
                     st.write("Κενό.")
                 else:
-                    # Χρησιμοποιούμε το index (θέση) για να σβήνουμε σωστά τη διακομιδή
-                    for i, trip in enumerate(amb_trips):
+                    # Εμφάνιση κάθε διακομιδής
+                    for trip in amb_trips:
                         st.text(f"📅 {trip['date']}")
-                        st.text(f"🕒 {trip['time']} - {trip
+                        st.text(f"🕒 {trip['time']} - {trip['end']}")
+                        st.text(f"👤 {trip['patient']}")
+                        st.text(f"📍 Από: {trip['from']}")
