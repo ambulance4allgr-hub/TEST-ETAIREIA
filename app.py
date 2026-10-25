@@ -41,6 +41,7 @@ if menu == "🏠 Αρχική":
 
 elif menu == "🚑 Live Παρακολούθηση":
     st.title("🚑 Κέντρο Παρακολούθησης Ασθενοφόρων")
+    
     @st.fragment(run_every=1.0)
     def draw_ambulances():
         for i in range(1, 5):
@@ -48,36 +49,24 @@ elif menu == "🚑 Live Παρακολούθηση":
             with st.container(border=True):
                 if not a["active"]:
                     c1, c2, c3, c4, c5, c6 = st.columns([1.5, 0.8, 1, 1, 0.8, 0.8])
-                    with c1:
-                        new_name = st.text_input("Όνομα", value=a["name"], key=f"name_{i}")
-                    with c2:
+                    with c1: new_name = st.text_input("Όνομα", value=a["name"], key=f"name_{i}")
+                    with c2: 
                         st.write("")
                         st.write("")
-                        if st.button("💾", key=f"save_name_{i}", help="Αποθήκευση ονόματος"):
-                            a["name"] = new_name
-                            st.rerun()
-                    with c3:
-                        a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="Ονόματα")
-                    with c4:
-                        a["origin"] = st.text_input("Από πού", key=f"o{i}", placeholder="π.χ. Αγία Όλγα")
-                    with c5:
-                        a["dest"] = st.text_input("Πού", key=f"d{i}", placeholder="π.χ. Ευαγγελισμός")
+                        if st.button("💾", key=f"save_name_{i}", help="Αποθήκευση ονόματος"): a["name"] = new_name; st.rerun()
+                    with c3: a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="Ονόματα")
+                    with c4: a["origin"] = st.text_input("Από πού", key=f"o{i}", placeholder="π.χ. Αγία Όλγα")
+                    with c5: a["dest"] = st.text_input("Πού", key=f"d{i}", placeholder="π.χ. Ευαγγελισμός")
                     with c6:
                         mins = st.number_input("Λεπτά", min_value=1, max_value=180, value=15, key=f"m{i}")
                         if st.button("▶", key=f"btn{i}", use_container_width=True, type="primary"):
-                            if a["origin"] and a["dest"]:
-                                a["total_mins"] = mins
-                                a["target"] = datetime.now() + timedelta(minutes=mins)
-                                a["active"] = True
-                                st.rerun()
-                            else:
-                                st.warning("Συμπλήρωσε διαδρομή.")
+                            if a["origin"] and a["dest"]: a["total_mins"] = mins; a["target"] = datetime.now() + timedelta(minutes=mins); a["active"] = True; st.rerun()
+                            else: st.warning("Συμπλήρωσε διαδρομή.")
                 else:
                     col_info, col_prog, col_timer, col_btn = st.columns([2, 1.5, 1.2, 0.8])
                     with col_info:
                         st.markdown(f"**🚑 {a['name']}**")
-                        if a["crew"]:
-                            st.caption(f"👥 {a['crew']}")
+                        if a["crew"]: st.caption(f"👥 {a['crew']}")
                         st.caption(f"📍 {a['origin']} ➔ {a['dest']}")
                     with col_prog:
                         st.write("") 
@@ -89,14 +78,10 @@ elif menu == "🚑 Live Παρακολούθηση":
                         if remaining > 0:
                             m, s = divmod(remaining, 60)
                             st.markdown(f"<div style='font-size: 35px; font-weight: bold; text-align: center; color: #FF4B4B; font-family: monospace;'>{m:02d}:{s:02d}</div>", unsafe_allow_html=True)
-                        else:
-                            st.success("✅ Έφτασε!")
+                        else: st.success("✅ Έφτασε!")
                     with col_btn:
                         st.write("")
-                        if st.button("⏹", key=f"stop{i}", use_container_width=True):
-                            a["active"] = False
-                            a["target"] = None
-                            st.rerun()
+                        if st.button("⏹", key=f"stop{i}", use_container_width=True): a["active"] = False; a["target"] = None; st.rerun()
     draw_ambulances()
 
 elif menu == "📋 Πρόγραμμα Διακομιδών":
@@ -114,7 +99,6 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         
         if st.form_submit_button("Καταχώρηση", type="primary"):
             if patient and from_loc and to_loc and amb_choice:
-                # Αποθήκευση χωρίς κενά
                 new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes}
                 st.session_state.trips.append(new_trip)
                 st.success("Η διακομιδή καταχωρήθηκε!")
@@ -128,7 +112,13 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     else:
         st.subheader("Ενεργές Διακομιδές")
         sorted_trips = sorted(st.session_state.trips, key=lambda x: (x['date'], x['time']))
-        
         for trip in sorted_trips:
             with st.container(border=True):
-                st.markdown(f"### 🕒
+                st.markdown(f"### 🕒 {trip['date']} | {trip['time']} - {trip['end']}")
+                st.markdown(f"**👤 Ασθενής:** {trip['patient']}")
+                st.markdown(f"**🏥 Από:** {trip['from']}")
+                st.markdown(f"**🏁 Προς:** {trip['to']}")
+                st.markdown(f"**🚑 Ασθενοφόρο:** {trip['amb']}")
+                if trip['notes']: st.caption(f"📝 Σημειώσεις: {trip['notes']}")
+                
+                if st.button("✅ Ολοκληρώθηκε", key=f"del_{trip['id']}", use_container_width=Tr
