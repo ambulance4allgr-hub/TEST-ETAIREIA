@@ -143,9 +143,9 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 if not amb_trips:
                     st.write("Κενό.")
                 else:
-                    # Εμφάνιση κάθε διακομιδής
-                    for trip in amb_trips:
+                    for i, trip in enumerate(amb_trips):
+                        # Εδώ προσθέσαμε το "Προς" που έλειπε
                         st.text(f"📅 {trip['date']}")
                         st.text(f"🕒 {trip['time']} - {trip['end']}")
                         st.text(f"👤 {trip['patient']}")
-                        st.text(f"📍 Από: {trip['from']}")
+                        st.text(f"📍 Από: {tri
