@@ -86,7 +86,7 @@ elif menu == "🚑 Live Παρακολούθηση":
                     with col_timer:
                         if remaining > 0:
                             m, s = divmod(remaining, 60)
-                            st.markdown(f"<div style='font-size: 35px; font-weight: bold; text-align: center; color: #FF4B4B; font-family: monospace;'>{m}:{s:02d}</div>", unsafe_allow_html=True)
+                            st.markdown(f"<div style='font-size: 35px; font-weight: bold; text-align: center; color: #FF4B4B; font-family: monospace;'>{m:02d}:{s:02d}</div>", unsafe_allow_html=True)
                         else:
                             st.success("✅ Έφτασε!")
                     with col_btn:
@@ -100,30 +100,28 @@ elif menu == "🚑 Live Παρακολούθηση":
 elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
     
-    patient = st.text_input("Όνομα Ασθενούς")
-    trip_time = st.text_input("Ώρα (π.χ. 14:30)")
-    from_loc = st.text_input("Από (Νοσοκομείο/Διεύθυνση)")
-    to_loc = st.text_input("Προς (Νοσοκομείο/Διεύθυνση)")
-    amb_choice = st.text_input("Ασθενοφόρο (Γράψε το όνομα)")
-    notes = st.text_input("Σημειώσεις")
-    
-    if st.button("Καταχώρηση", type="primary"):
-        if patient and from_loc and to_loc and amb_choice:
-            # Δίνουμε ένα μοναδικό ID σε κάθε διακομιδή για να σβήνεται σωστά
-            trip_id = str(uuid.uuid4())
-            st.session_state.trips.append({
-                "id": trip_id,
-                "time": trip_time, 
-                "patient": patient, 
-                "from": from_loc, 
-                "to": to_loc, 
-                "amb": amb_choice, 
-                "notes": notes
-            })
-            st.success("Η διακομιδή καταχωρήθηκε!")
-            st.rerun()
-        else:
-            st.error("Συμπλήρωσε όλα τα πεδία.")
+    with st.form("trip_form", clear_on_submit=True):
+        patient = st.text_input("Όνομα Ασθενούς")
+        trip_time = st.text_input("Ώρα (π.χ. 14:30)")
+        from_loc = st.text_input("Από (Νοσοκομείο/Διεύθυνση)")
+        to_loc = st.text_input("Προς (Νοσοκομείο/Διεύθυνση)")
+        amb_choice = st.text_input("Ασθενοφόρο (Γράψε το όνομα)")
+        notes = st.text_input("Σημειώσεις")
+        
+        if st.form_submit_button("Καταχώρηση", type="primary"):
+            if patient and from_loc and to_loc and amb_choice:
+                st.session_state.trips.append({
+                    "id": str(uuid.uuid4()),
+                    "time": trip_time, 
+                    "patient": patient, 
+                    "from": from_loc, 
+                    "to": to_loc, 
+                    "amb": amb_choice, 
+                    "notes": notes
+                })
+                st.success("Η διακομιδή καταχωρήθηκε!")
+            else:
+                st.error("Συμπλήρωσε όλα τα πεδία.")
 
     st.divider()
     
@@ -135,7 +133,6 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         
         for trip in sorted_trips:
             with st.container(border=True):
-                col1, col2, col3, col4 = st.columns([1, 3, 3, 1.5])
-                with col1:
-                    st.markdown(f"### 🕒 {trip['time']}")
-                with col2:
+                st.write(f"🕒 **Ώρα:** {trip['time']}")
+                st.write(f"👤 **Ασθενής:** {trip['patient']}")
+                st.write(f"🏥 **Από:**
