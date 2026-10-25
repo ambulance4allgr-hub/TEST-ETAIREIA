@@ -9,7 +9,9 @@ st.sidebar.title("Μενού Εφαρμογής")
 menu = st.sidebar.radio("Επιλέξτε Ενότητα:", ["🏠 Αρχική", "🚑 Live Παρακολούθηση", "📋 Πρόγραμμα Διακομιδών"])
 
 if "amb" not in st.session_state:
-    st.session_state.amb = {i: {"name": f"Ασθενοφόρο {i}", "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False} for i in range(1, 5)}
+    st.session_state.amb = {}
+    for i in range(1, 5):
+        st.session_state.amb[i] = {"name": f"Ασθενοφόρο {i}", "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False}
 
 if "trips" not in st.session_state:
     st.session_state.trips = []
@@ -135,4 +137,3 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
             with st.container(border=True):
                 st.write(f"🕒 **Ώρα:** {trip['time']}")
                 st.write(f"👤 **Ασθενής:** {trip['patient']}")
-                st.write(f"🏥 **Από:**
