@@ -37,23 +37,14 @@ if menu == "🏠 Αρχική":
     st.markdown("<h1 style='text-align: center; color: #FF4B4B; font-size: 50px;'>🚑 Καλώς ήρθατε στην Εταιρεία μας</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align: center; color: #555;'>Η Νούμερο 1 Επιλογή στην Άμεση Ανταπόκριση και τις Διακομιδές</h3>", unsafe_allow_html=True)
     st.write("---")
-    
     st.markdown("""
     ### 🏆 Η Αριστεία είναι ο Πρότυπό μας
-    
-    Στην **Εταιρεία μας**, δεν κάνουμε απλώς τη δουλειά μας· θέτουμε τα πρότυπα της αγοράς. Είμαστε περήφανοι που θεωρούμαστε οι **απόλυτοι ηγέτες** στον τομέα των υπηρεσιών υγείας και διακομιδών, προσφέροντας ένα επίπεδο φροντίδας και ασφάλειας που ξεπερνά κάθε προσδοκία.
-    
-    Διαθέτουμε τον **πιο σύγχρονο και άρτια εξοπλισμένο στόλο ασθενοφόρων** στην περιοχή. Κάθε όχημά μας είναι ένα κινούμενο κέντρο εντατικής φροντίδας, εξοπλισμένο με την τελευταία λέξη της τεχνολογίας, διασφαλίζοντας ότι οι ασθενείς μας λαμβάνουν την καλύτερη δυνατή υποστήριξη κατά τη μεταφορά τους.
-    
-    Πίσω από το τιμόνι και δίπλα σε κάθε ασθενή, βρίσκονται τα **πιο έμπειρα και καταρτισμένα πληρώματα**. Οι διασώστες και οι οδηγοί μας δεν είναι απλοί εργαζόμενοι· είναι αφοσιωμένοι επαγγελματίες που αντιμετωπίζουν κάθε περιστατικό με τον μέγιστο σεβασμό, ψυχραιμία και επαγγελματισμό. 
-    
-    Η δέσμευσή μας είναι απέναντι στη ζωή και στην υγεία. Γι' αυτό και λειτουργούμε **24 ώρες το 24ωρο, 7 ημέρες την εβδομάδα, 365 ημέρες τον χρόνο**. Όταν μας χρειάζεστε, είμαστε εκεί. Άμεσα, αξιόπιστα και με απόλυτη επιτυχία.
-    
-    *Επιλέξτε μας με κλειστά μάτια. Η ασφάλεια και η υγεία σας είναι η δική μας προτεραιότητα.*
+    Στην **Εταιρεία μας**, δεν κάνουμε απλώς τη δουλειά μας· θέτουμε τα πρότυπα της αγοράς. Είμαστε περήφανοι που θεωρούμαστε οι **απόλυτοι ηγέτες** στον τομέα των υπηρεσιών υγείας και διακομιδών.
+    Διαθέτουμε τον **πιο σύγχρονο και άρτια εξοπλισμένο στόλο ασθενοφόρων** στην περιοχή. Κάθε όχημά μας είναι ένα κινούμενο κέντρο εντατικής φροντίδας.
+    Πίσω από το τιμόνι βρίσκονται τα **πιο έμπειρα και καταρτισμένα πληρώματα**. Λειτουργούμε **24 ώρες το 24ωρο, 7 ημέρες την εβδομάδα**.
     """)
-    
     st.write("---")
-    st.success("👈 Χρησιμοποιήστε το μενού στα αριστερά για να μεταβείτε στην Παρακολούθηση των Ασθενοφόρων ή στο Πρόγραμμα Διακομιδών.")
+    st.success("👈 Χρησιμοποιήστε το μενού στα αριστερά για να μεταβείτε στις άλλες ενότητες.")
 
 # ==========================================
 # LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ
@@ -120,20 +111,31 @@ elif menu == "🚑 Live Παρακολούθηση":
 elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
     
-    with st.form("trip_form", clear_on_submit=True):
-        st.subheader("Καταχώρηση Νέας Διακομιδής")
-        patient = st.text_input("Όνομα Ασθενούς")
-        trip_date = st.date_input("Ημερομηνία")
-        trip_time = st.text_input("Ώρα Έναρξης")
-        trip_end = st.text_input("Ώρα Τέλους")
-        from_loc = st.text_input("Από")
-        to_loc = st.text_input("Προς")
-        amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
-        notes = st.text_input("Σημειώσεις")
-        
-        # Εδώ έγινε η διόρθωση. Αντί για if με κενά, ελέγχουμε αν είναι όλα συμπληρωμένα με ασφάλεια
-        if st.form_submit_button("Καταχώρηση", type="primary"):
-            is_valid = bool(patient) and bool(from_loc) and bool(to_loc)
+    st.subheader("Καταχώρηση Νέας Διακομιδής")
+    # Χρησιμοποιούμε session_state για να καθαρίζουν τα πεδία μετά την καταχώρηση
+    if "p_name" not in st.session_state: st.session_state.p_name = ""
+    if "p_time" not in st.session_state: st.session_state.p_time = ""
+    if "p_end" not in st.session_state: st.session_state.p_end = ""
+    if "p_from" not in st.session_state: st.session_state.p_from = ""
+    if "p_to" not in st.session_state: st.session_state.p_to = ""
+    if "p_notes" not in st.session_state: st.session_state.p_notes = ""
+
+    patient = st.text_input("Όνομα Ασθενούς", value=st.session_state.p_name)
+    trip_date = st.date_input("Ημερομηνία")
+    trip_time = st.text_input("Ώρα Έναρξης", value=st.session_state.p_time)
+    trip_end = st.text_input("Ώρα Τέλους", value=st.session_state.p_end)
+    from_loc = st.text_input("Από", value=st.session_state.p_from)
+    to_loc = st.text_input("Προς", value=st.session_state.p_to)
+    amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
+    notes = st.text_input("Σημειώσεις", value=st.session_state.p_notes)
+    
+    if st.button("Καταχώρηση", type="primary"):
+        if patient and from_loc and to_loc:
+            trips = load_data()
+            new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes}
+            trips.append(new_trip)
+            save_data(trips)
             
-            if is_valid:
-                trips = load_data()
+            # Καθαρίζουμε τα πεδία
+            st.session_state.p_name = ""
+            st.session_state.p_time = ""
