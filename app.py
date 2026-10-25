@@ -34,15 +34,6 @@ if menu == "🏠 Αρχική":
     st.markdown("<h1 style='text-align: center; color: #FF4B4B;'>🚑 Καλώς ήρθατε στην Εταιρεία μας</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align: center;'>Πρωτοπόροι στις Διακομιδές και την Άμεση Ανταπόκριση</h3>", unsafe_allow_html=True)
     st.info("Η εταιρεία μας δεσμεύεται να παρέχει τις πιο ασφαλείς, γρήγορες και αξιόπιστες υπηρεσίες διακομιδών.")
-    st.write("---")
-    st.subheader("Γιατί να μας επιλέξετε;")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.info("⚡ **Άμεση Ανταπόκριση**\n\nΕίμαστε έτοιμοι να ανταποκριθούμε στο περιστατικό σας άμεσα.")
-    with col2:
-        st.info("🚑 **Σύγχρονος Στόλος**\n\nΔιαθέτουμε πλήρως εξοπλισμένα ασθενοφόρα, τηρώντας όλα τα πρότυπα ασφαλείας.")
-    with col3:
-        st.info("👨‍⚕️ **Έμπειρο Προσωπικό**\n\nΤο πλήρωμά μας αποτελείται από έμπειρους διασώστες και οδηγούς.")
 
 elif menu == "🚑 Live Παρακολούθηση":
     st.title("🚑 Κέντρο Παρακολούθησης Ασθενοφόρων")
@@ -125,7 +116,6 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 st.error("Συμπλήρωσε Ασθενή, Από και Προς.")
 
     st.divider()
-    
     current_trips = load_data()
     
     if not current_trips:
@@ -143,9 +133,19 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 if not amb_trips:
                     st.write("Κενό.")
                 else:
-                    for i, trip in enumerate(amb_trips):
-                        # Εδώ προσθέσαμε το "Προς" που έλειπε
+                    for trip in amb_trips:
                         st.text(f"📅 {trip['date']}")
                         st.text(f"🕒 {trip['time']} - {trip['end']}")
                         st.text(f"👤 {trip['patient']}")
-                        st.text(f"📍 Από: {tri
+                        st.text(f"📍 Από: {trip['from']}")
+                        st.text(f"🏁 Προς: {trip['to']}")
+                        
+                        n_text = trip.get('notes')
+                        if n_text: st.text(f"📝 {n_text}")
+                            
+                        btn_key = "del_" + str(trip['id'])
+                        
+                        if st.button("🗑️ Διαγραφή", key=btn_key):
+                            new_trips = [t for t in current_trips if str(t['id']) != str(trip['id'])]
+                            save_data(new_trips)
+                            st.rer
