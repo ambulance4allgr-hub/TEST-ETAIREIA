@@ -52,13 +52,14 @@ elif menu == "🚑 Live Παρακολούθηση":
             a = st.session_state.amb[i]
             with st.container(border=True):
                 if not a["active"]:
+                    # Τα κουτάκια είναι ακριβώς όπως τα ζήτησες
                     c1, c2, c3, c4, c5 = st.columns([1, 1, 1, 1, 0.8])
                     with c1:
                         a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="Ονόματα")
                     with c2:
-                        a["origin"] = st.text_input("Από πού", key=f"o{i}")
+                        a["origin"] = st.text_input("Από", key=f"o{i}")
                     with c3:
-                        a["dest"] = st.text_input("Πού", key=f"d{i}")
+                        a["dest"] = st.text_input("Προς", key=f"d{i}")
                     with c4:
                         mins = st.number_input("Λεπτά", min_value=1, max_value=180, value=15, key=f"m{i}")
                     with c5:
@@ -111,8 +112,8 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         trip_date = st.date_input("Ημερομηνία")
         trip_time = st.text_input("Ώρα Έναρξης (π.χ. 14:30)")
         trip_end = st.text_input("Ώρα Τέλους (π.χ. 15:15)")
-        from_loc = st.text_input("Από (Νοσοκομείο/Διεύθυνση)")
-        to_loc = st.text_input("Προς (Νοσοκομείο/Διεύθυνση)")
+        from_loc = st.text_input("Από")
+        to_loc = st.text_input("Προς")
         amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
         notes = st.text_input("Σημειώσεις")
         
