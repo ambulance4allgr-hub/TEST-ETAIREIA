@@ -103,15 +103,12 @@ elif menu == "🚑 Live Παρακολούθηση":
 elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.title("📋 Πρόγραμμα Διακομιδών")
     
-    trips = load_data()
-
-    # Χρήση φόρμας για να καθαρίζουν τα πεδία αυτόματα με το clear_on_submit
     with st.form("trip_form", clear_on_submit=True):
         st.subheader("Καταχώρηση Νέας Διακομιδής")
         patient = st.text_input("Όνομα Ασθενούς")
         trip_date = st.date_input("Ημερομηνία")
-        trip_time = st.text_input("Ώρα Έναρξης (π.χ. 14:30)")
-        trip_end = st.text_input("Ώρα Τέλους (π.χ. 15:15)")
+        trip_time = st.text_input("Ώρα Έναρξης")
+        trip_end = st.text_input("Ώρα Τέλους")
         from_loc = st.text_input("Από")
         to_loc = st.text_input("Προς")
         amb_choice = st.selectbox("Επιλογή Ασθενοφόρου", NAMES)
@@ -119,20 +116,20 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         
         if st.form_submit_button("Καταχώρηση", type="primary"):
             if patient and from_loc and to_loc:
+                trips = load_data()
                 new_trip = {"id": str(uuid.uuid4()), "date": str(trip_date), "time": trip_time, "end": trip_end, "patient": patient, "from": from_loc, "to": to_loc, "amb": amb_choice, "notes": notes}
                 trips.append(new_trip)
                 save_data(trips)
-                st.success(f"Η διακομιδή για το {amb_choice} καταχωρήθηκε!")
-                # Δεν βάζουμε st.rerun() εδώ γιατί η φόρμα το κάνει μόνη της και μπερδεύει το πρόγραμμα
+                st.success(f"Καταχωρήθηκε για το {amb_choice}!")
             else:
-                st.error("Συμπλήρωσε τουλάχιστον Ασθενή, Από και Προς.")
+                st.error("Συμπλήρωσε Ασθενή, Από και Προς.")
 
     st.divider()
     
-    # Επειδή η φόρμα δεν κάνει rerun, φορτώνουμε τα δεδομένα ξανά για να δείξει τη νέα διακομιδή αμέσως
-    trips = load_data()
+    # Διαβάζουμε τα δεδομένα φρέσκα
+    current_trips = load_data()
     
-    if not trips:
+    if not current_trips:
         st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
     else:
         st.subheader("Πρόγραμμα ανά Ασθενοφόρο")
@@ -141,10 +138,14 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         for idx, amb_name in enumerate(NAMES):
             with cols[idx]:
                 st.markdown(f"### 🚑 {amb_name}")
-                amb_trips = [t for t in trips if t['amb'] == amb_name]
+                amb_trips = [t for t in current_trips if t['amb'] == amb_name]
                 amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
                 
                 if not amb_trips:
-                    st.write("Δεν υπάρχουν ραντεβού.")
+                    st.write("Κενό.")
                 else:
-                    for trip
+                    for trip in amb_trips:
+                        # Απλή, επίπεδη εμφάνιση για να μην σπάει
+                        st.text(f"📅 {trip['date']}")
+                        st.text(f"🕒 {trip['time']} - {trip['end']}")
+                        st.text(f"👤 {trip['patient']}")
