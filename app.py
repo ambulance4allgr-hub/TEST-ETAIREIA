@@ -2,21 +2,20 @@ import streamlit as st
 import time
 from datetime import datetime, timedelta
 
-# Ρύθμιση της σελίδας να ανοίγει σε πλατύ παράθυρο
+# Ρύθμιση της σελίδας
 st.set_page_config(page_title="Κέντρο Ελέγχου Εταιρείας", layout="wide")
 
 # --- ΠΛΑΪΝΟ ΜΕΝΟΥ ---
 st.sidebar.title("Μενού Εφαρμογής")
 menu = st.sidebar.radio("Επιλέξτε Ενότητα:", ["🏠 Αρχική", "🚑 Live Παρακολούθηση", "📋 Πρόγραμμα Διακομιδών"])
 
-# Αρχικοποίηση μνήμης για τα ασθενοφόρα
+# Αρχικοποίηση μνήμης
 if "amb" not in st.session_state:
     st.session_state.amb = {
         i: {"name": f"Ασθενοφόρο {i}", "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 0, "active": False}
         for i in range(1, 5)
     }
 
-# Αρχικοποίηση μνήμης για τις διακομιδές
 if "trips" not in st.session_state:
     st.session_state.trips = []
 
@@ -24,12 +23,10 @@ if "trips" not in st.session_state:
 # ΕΝΟΤΗΤΑ 1: ΑΡΧΙΚΗ ΣΕΛΙΔΑ
 # ==========================================
 if menu == "🏠 Αρχική":
-    # Μεγάλος τίτλος και υπότιτλος
     st.markdown("<h1 style='text-align: center; color: #FF4B4B;'>🚑 Καλώς ήρθατε στην Εταιρεία μας</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align: center;'>Πρωτοπόροι στις Διακομιδές και την Άμεση Ανταπόκριση</h3>", unsafe_allow_html=True)
     st.write("")
     
-    # Κείμενο για την εταιρεία
     st.info("""
     Η εταιρεία μας δεσμεύεται να παρέχει τις πιο ασφαλείς, γρήγορες και αξιόπιστες υπηρεσίες διακομιδών. 
     Με χρόνια εμπειρίας και έναν από τους πιο σύγχρονους στόλους ασθενοφόρων, είμαστε πάντα δίπλα σας 
@@ -37,8 +34,6 @@ if menu == "🏠 Αρχική":
     """)
     
     st.write("---")
-    
-    # Τα πλεονεκτήματά μας σε 3 στήλες
     st.subheader("Γιατί να μας επιλέξετε;")
     col1, col2, col3 = st.columns(3)
     
@@ -58,8 +53,6 @@ if menu == "🏠 Αρχική":
             st.write("Το πλήρωμά μας αποτελείται από έμπειρους διασώστες και οδηγούς, έτοιμους να προσφέρουν τη φροντίδα που αξίζετε.")
 
     st.write("---")
-    
-    # Μήνυμα στο κάτω μέρος
     st.success("Χρησιμοποιήστε το μενού στα αριστερά για να μεταβείτε στην Παρακολούθηση των Ασθενοφόρων ή στο Πρόγραμμα Διακομιδών.")
 
 # ==========================================
@@ -144,7 +137,12 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 to_loc = st.text_input("Προς (Νοσοκομείο/Διεύθυνση)")
             with c3:
                 amb_choice = st.text_input("Ασθενοφόρο (Γράψε το όνομα)")
-                notes = st.text_input("Σημειώσεις (π.χ. Οξυγόνο, φορεία)")
+                notes = st.text_input("Σημειώσεις")
                 
             submitted = st.form_submit_button("Καταχώρηση", type="primary")
-            if su
+            if submitted:
+                if patient and from_loc and to_loc and amb_choice:
+                    st.session_state.trips.append({
+                        "time": trip_time,
+                        "patient": patient,
+                        "from": from_lo
