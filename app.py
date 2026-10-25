@@ -2,7 +2,7 @@ import streamlit as st
 import time
 from datetime import datetime, timedelta
 import uuid
-import pandas as pd
+import json
 import os
 
 st.set_page_config(page_title="Κέντρο Ελέγχου Εταιρείας", layout="wide")
@@ -10,20 +10,22 @@ st.sidebar.title("Μενού Εφαρμογής")
 menu = st.sidebar.radio("Επιλέξτε Ενότητα:", ["🏠 Αρχική", "🚑 Live Παρακολούθηση", "📋 Πρόγραμμα Διακομιδών"])
 
 NAMES = ["Τ12", "Τ16", "Τ16Β", "Τ16Δ"]
-FILE_NAME = "trips.csv"
+FILE_NAME = "trips.json" # Αλλάξαμε το αρχείο σε JSON για να μην μπερδεύεται
 
+# Συνάρτηση που διαβάζει τις διακομιδές
 def load_data():
     if os.path.exists(FILE_NAME):
         try:
-            df = pd.read_csv(FILE_NAME)
-            return df.fillna("").to_dict('records')
+            with open(FILE_NAME, "r", encoding="utf-8") as f:
+                return json.load(f)
         except:
             return []
     return []
 
+# Συνάρτηση που γράφει τις διακομιδές
 def save_data(trips):
-    df = pd.DataFrame(trips)
-    df.to_csv(FILE_NAME, index=False)
+    with open(FILE_NAME, "w", encoding="utf-8") as f:
+        json.dump(trips, f, ensure_ascii=False, indent=4)
 
 if "amb" not in st.session_state:
     st.session_state.amb = {}
@@ -105,7 +107,6 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     
     trips = load_data()
 
-    # Βγάλαμε το st.form για να δουλεύει το κουμπί σωστά
     st.subheader("Καταχώρηση Νέας Διακομιδής")
     patient = st.text_input("Όνομα Ασθενούς")
     trip_date = st.date_input("Ημερομηνία")
@@ -152,7 +153,4 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
                 amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
                 
                 if not amb_trips:
-                    st.write("Δεν υπάρχουν ραντεβού.")
-                else:
-                    for trip in amb_trips:
-                        st.ma
+                    st.write("Δε
