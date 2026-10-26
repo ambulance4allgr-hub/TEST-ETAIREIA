@@ -77,44 +77,32 @@ elif menu == "🚑 Live Παρακολούθηση":
     def draw_ambulances():
         for i in range(1, 7):
             a = st.session_state.amb[i]
-            with st.container(border=True):
-                if not a["active"]:
-                    c1, c2, c3, c4, c5 = st.columns([1, 1, 1, 1, 0.8])
-                    with c1:
-                        a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"c_{i}", placeholder="Ονόματα")
-                    with c2:
-                        a["origin"] = st.text_input("Από", key=f"o_{i}")
-                    with c3:
-                        a["dest"] = st.text_input("Προς", key=f"d_{i}")
-                    with c4:
-                        st.number_input("Λεπτά", min_value=1, max_value=180, value=15, key=f"m_{i}")
-                    with c5:
-                        st.write("")
-                        st.write("")
-                        st.button("▶", key=f"b_{i}", use_container_width=True, type="primary", on_click=start_amb, args=(i,))
-                    st.markdown(f"### 🚑 {st.session_state.names[i-1]}")
+            st.write("---")
+            if not a["active"]:
+                # Χρησιμοποιούμε πολύ απλές γραμμές, χωρίς πολλά κουτιά
+                a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"c_{i}", placeholder="Ονόματα")
+                a["origin"] = st.text_input("Από", key=f"o_{i}")
+                a["dest"] = st.text_input("Προς", key=f"d_{i}")
+                st.number_input("Λεπτά", min_value=1, max_value=180, value=15, key=f"m_{i}")
+                st.button("▶ Έναρξη", key=f"b_{i}", type="primary", on_click=start_amb, args=(i,))
+                st.markdown(f"### 🚑 {st.session_state.names[i-1]}")
+            else:
+                st.markdown(f"### 🚑 {st.session_state.names[i-1]}")
+                if a["crew"]:
+                    st.write(f"👥 {a['crew']}")
+                st.write(f"📍 {a['origin']} ➔ {a['dest']}")
+                
+                remaining = max(0, int((a["target"] - datetime.now()).total_seconds()))
+                total_secs = a["total_mins"] * 60
+                prog = 1 - (remaining / total_secs) if total_secs > 0 else 0
+                st.progress(min(max(prog, 0.0), 1.0))
+                
+                if remaining > 0:
+                    m, s = divmod(remaining, 60)
+                    st.markdown(f"<div style='font-size: 35px; font-weight: bold; color: #FF4B4B; font-family: monospace;'>{m:02d}:{s:02d}</div>", unsafe_allow_html=True)
                 else:
-                    st.markdown(f"### 🚑 {st.session_state.names[i-1]}")
-                    col_info, col_prog, col_timer, col_btn = st.columns([2, 1.5, 1.2, 0.8])
-                    with col_info:
-                        if a["crew"]:
-                            st.caption(f"👥 {a['crew']}")
-                        st.caption(f"📍 {a['origin']} ➔ {a['dest']}")
-                    with col_prog:
-                        st.write("") 
-                        remaining = max(0, int((a["target"] - datetime.now()).total_seconds()))
-                        total_secs = a["total_mins"] * 60
-                        prog = 1 - (remaining / total_secs) if total_secs > 0 else 0
-                        st.progress(min(max(prog, 0.0), 1.0))
-                    with col_timer:
-                        if remaining > 0:
-                            m, s = divmod(remaining, 60)
-                            st.markdown(f"<div style='font-size: 35px; font-weight: bold; text-align: center; color: #FF4B4B; font-family: monospace;'>{m:02d}:{s:02d}</div>", unsafe_allow_html=True)
-                        else:
-                            st.success("✅ Έφτασε!")
-                    with col_btn:
-                        st.write("")
-                        st.button("⏹", key=f"s_{i}", use_container_width=True, on_click=stop_amb, args=(i,))
+                    st.success("✅ Έφτασε!")
+                st.button("⏹ Τερματισμός", key=f"s_{i}", on_click=stop_amb, args=(i,))
     draw_ambulances()
 
 elif menu == "📋 Πρόγραμμα Διακομιδών":
@@ -129,6 +117,25 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.text_input("Προς", key="f_to")
     st.selectbox("Επιλογή Ασθενοφόρου", st.session_state.names, key="f_amb")
     st.text_input("Σημειώσεις", key="f_notes")
+    
     st.button("Καταχώρηση", type="primary", on_click=add_trip)
     
-    if st.session_state.get("trip_success") =
+    if st.session_state.get("trip_success") == True:
+        st.success("Η διακομιδή καταχωρήθηκε με επιτυχία!")
+        st.session_state.trip_success = None
+    elif st.session_state.get("trip_success") == False:
+        st.error("Συμπλήρωσε Ασθενή, Από και Προς.")
+        st.session_state.trip_success = None
+
+    st.divider()
+    
+    if not st.session_state.trips:
+        st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
+    else:
+        st.subheader("Πρόγραμμα ανά Ασθενοφόρο")
+        # Εδώ εμφανίζουμε τις στήλες με τις διακομιδές
+        cols = st.columns(6)
+        for idx, amb_name in enumerate(st.session_state.names):
+            with cols[idx]:
+                st.markdown(f"### 🚑 {amb_name}")
+                amb_trips = [t for t in st.session_s
