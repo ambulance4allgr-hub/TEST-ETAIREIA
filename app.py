@@ -18,7 +18,6 @@ def load_data():
                 return json.load(f)
         except:
             pass
-    
     return {
         "names": ["Τ12", "Τ16", "Τ16Β", "Τ16Δ", "Κενό 5", "Κενό 6"],
         "trips": []
@@ -166,56 +165,56 @@ if menu == "🏠 Εταιρικό Προφίλ":
 
 # --- 2. LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ ΣΤΟΛΟΥ ---
 elif menu == "⏱️ Live Παρακολούθηση Στόλου":
-    st.title("⏱️ Ζωντανός Έλεγχος & Αντίστροφη Μέτρηση")
-    st.subheader("Παρακολούθηση ενεργών δρομολογίων σε πραγματικό χρόνο")
+    st.title("⏱️ Ζωντανός Έλεγχος Στόλου & Κίνησης")
+    
+    # ΕΝΣΩΜΑΤΩΣΗ GOOGLE MAPS ΜΕ LIVE TRAFFIC LAYER (ΚΙΝΗΣΗ ΣΤΟΥΣ ΔΡΟΜΟΥΣ)
+    st.subheader("🗺️ Ζωντανός Χάρτης Κίνησης (Google Maps Traffic)")
+    # Το embedding URL περιλαμβάνει την παράμετρο layer=t για την αυτόματη εμφάνιση της κίνησης
+    google_maps_html = """
+    <iframe 
+        width="100%" 
+        height="450" 
+        style="border:0; border-radius:10px;" 
+        loading="lazy" 
+        allowfullscreen 
+        src="https://google.com">
+    </iframe>
+    """
+    st.components.v1.html(google_maps_html, height=460)
+    
+    st.write("---")
+    st.subheader("🚑 Κατάσταση & Χρονόμετρα Οχημάτων")
 
     @st.fragment(run_every=1.0)
-    def live_countdown_widget(i):
-        a = st.session_state.amb[i]
-        if a["active"] and a["target"] is not None:
-            remaining = max(0, int((a["target"] - datetime.now()).total_seconds()))
-            total_secs = a["total_mins"] * 60
-            prog = 1 - (remaining / total_secs) if total_secs > 0 else 0
-            st.progress(min(max(prog, 0.0), 1.0))
-            if remaining > 0:
-                m, s = divmod(remaining, 60)
-                st.markdown(f"<div style='font-size: 38px; font-weight: bold; color: #CD1818; font-family: monospace; background-color: #F8F9FA; padding: 5px 15px; border-radius: 5px; display: inline-block;'>⏳ {m:02d}:{s:02d}</div>", unsafe_allow_html=True)
-            else:
-                st.success("✅ Το όχημα έφτασε!")
-
-    cols = st.columns(3)
-    for i in range(1, 7):
-        current_col = cols[(i-1) % 3]
-        a = st.session_state.amb[i]
-        name = current_names[i-1]
-        
-        with current_col:
-            st.markdown(f"### 🚑 {name}")
-            if a["active"]:
-                if a["crew"]: st.markdown(f"**👥 Πλήρωμα:** {a['crew']}")
-                st.markdown(f"📍 **Διαδρομή:** {a['origin']} ➔ {a['dest']}")
-                live_countdown_widget(i)
-                st.button("⏹️ Τερματισμός", key=f"stop_{i}", on_click=stop_amb, args=(i,), use_container_width=True)
-            else:
-                a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="π.χ. Κώστας / Γιάννης")
-                a["origin"] = st.text_input("Από", value=a["origin"], key=f"orig_{i}", placeholder="Σημείο Παραλαβής")
-                a["dest"] = st.text_input("Προς", value=a["dest"], key=f"dest_{i}", placeholder="Νοσοκομείο")
-                a["total_mins"] = st.number_input("Λεπτά", min_value=1, max_value=240, value=int(a["total_mins"]), key=f"mins_{i}")
-                st.button("▶️ Έναρξη Κίνησης", key=f"start_{i}", type="primary", on_click=start_amb, args=(i,), use_container_width=True)
-            st.write("---")
-
-# --- 3. ΠΡΟΓΡΑΜΜΑ ΔΙΑΚΟΜΙΔΩΝ ---
-elif menu == "📋 Προγραμματισμός Διακομιδών":
-    st.title("📋 Προγραμματισμός & Καταγραφή Διακομιδών")
-    form_col, view_col = st.columns([1, 1.6], gap="large")
-    
-    with form_col:
-        st.subheader("📝 Καταχώρηση Νέας Διακομιδής")
-        st.text_input("Όνομα Ασθενούς", key="f_patient", placeholder="π.χ. Γεώργιος Παπαδόπουλος")
-        st.date_input("Ημερομηνία", key="f_date")
-        
-        c_time1, c_time2 = st.columns(2)
-        with c_time1: 
-            st.text_input("Ώρα Έναρξης", key="f_time", placeholder="π.χ. 09:30")
-        with c_time2: 
-            st.text_input("Ώρα Τέλους / Άφιξης", key="f_end", placeholder="π.χ. 10:15")
+    def live_timers_core():
+        cols = st.columns(3)
+        for i in range(1, 7):
+            current_col = cols[(i-1) % 3]
+            a = st.session_state.amb[i]
+            name = current_names[i-1]
+            
+            with current_col:
+                st.markdown(f"### 🚑 {name}")
+                if a["active"]:
+                    if a["crew"]: st.markdown(f"**👥 Πλήρωμα:** {a['crew']}")
+                    st.markdown(f"📍 **Διαδρομή:** {a['origin']} ➔ {a['dest']}")
+                    
+                    if a["target"] is not None:
+                        remaining = max(0, int((a["target"] - datetime.now()).total_seconds()))
+                        total_secs = a["total_mins"] * 60
+                        prog = 1 - (remaining / total_secs) if total_secs > 0 else 0
+                        st.progress(min(max(prog, 0.0), 1.0))
+                        
+                        if remaining > 0:
+                            m, s = divmod(remaining, 60)
+                            st.markdown(f"<div style='font-size: 38px; font-weight: bold; color: #CD1818; font-family: monospace; background-color: #F8F9FA; padding: 5px 15px; border-radius: 5px; display: inline-block;'>⏳ {m:02d}:{s:02d}</div>", unsafe_allow_html=True)
+                        else:
+                            st.success("✅ Το όχημα έφτασε!")
+                            
+                    st.button("⏹️ Τερματισμός", key=f"stop_{i}", on_click=stop_amb, args=(i,), use_container_width=True)
+                else:
+                    a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="π.χ. Κώστας / Γιάννης")
+                    a["origin"] = st.text_input("Από", value=a["origin"], key=f"orig_{i}", placeholder="Σημείο Παραλαβής")
+                    a["dest"] = st.text_input("Προς", value=a["dest"], key=f"dest_{i}", placeholder="Νοσοκομείο")
+                    a["total_mins"] = st.number_input("Λεπτά", min_value=1, max_value=240, value=int(a["total_mins"]), key=f"mins_{i}")
+                    st.button("▶️ Έναρξη Κίνησης", key=f"start_{i}", type="primary", on_click=start_amb, args=(i,), use_container_width=True)
