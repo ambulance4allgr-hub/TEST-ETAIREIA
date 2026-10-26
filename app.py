@@ -5,7 +5,7 @@ import uuid
 import json
 import os
 
-st.set_page_config(page_title="ambulance4all | Κέντρο Επιχειρήσεων", layout="wide")
+st.set_page_config(page_title="Ambulance4all | Κέντρο Επιχειρήσεων", layout="wide")
 
 # --- ΑΡΧΕΙΑ ΜΟΝΙΜΗΣ ΑΠΟΘΗΚΕΥΣΗΣ ---
 DATA_FILE = "ambulance_data.json"
@@ -45,7 +45,6 @@ def save_data():
 saved_data = load_data()
 
 # --- ΑΡΧΙΚΟΠΟΙΗΣΗ SESSION STATE ---
-# ΔΙΟΡΘΩΘΗΚΕ: Σωστή ανάγνωση των θέσεων [0] έως [5] από το αρχείο
 if "name_1" not in st.session_state: st.session_state["name_1"] = saved_data["names"][0]
 if "name_2" not in st.session_state: st.session_state["name_2"] = saved_data["names"][1]
 if "name_3" not in st.session_state: st.session_state["name_3"] = saved_data["names"][2]
@@ -69,12 +68,12 @@ if "trips" not in st.session_state:
     st.session_state.trips = saved_data["trips"]
 
 # --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ & ΔΙΑΧΕΙΡΙΣΗ ΟΝΟΜΑΤΩΝ ---
-st.sidebar.markdown("### 🚑 ambulance4all")
+st.sidebar.markdown("### 🚑 Ambulance4all")
 menu = st.sidebar.radio("Μεταβείτε στην ενότητα:", ["🏠 Εταιρικό Προφίλ", "⏱️ Live Παρακολούθηση Στόλου", "📋 Προγραμματισμός Διακομιδών"])
 
 st.sidebar.write("---")
 st.sidebar.markdown("### ⚙️ Ονοματοδοσία Στόλου")
-st.sidebar.caption("Τροποποιήστε τα ονόματα. Αποθηκεύονται αυτόματα.")
+st.sidebar.caption("Τροποποιήστε τα ονόματα των οχημάτων.")
 
 st.sidebar.text_input("Όχημα 1", key="name_1", on_change=save_data)
 st.sidebar.text_input("Όχημα 2", key="name_2", on_change=save_data)
@@ -150,14 +149,13 @@ def delete_trip(trip_id):
 
 # --- 1. ΕΤΑΙΡΙΚΟ ΠΡΟΦΙΛ ---
 if menu == "🏠 Εταιρικό Προφίλ":
-    st.markdown("<h1 style='text-align: center; color: #CD1818; font-size: 50px; font-weight: bold;'>🚑 ambulance4all</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #CD1818; font-size: 50px; font-weight: bold;'>🚑 Ambulance4all</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align: center; color: #333; font-weight: normal;'>Ιδιωτικά Ασθενοφόρα & Σύγχρονες Ιατρικές Διακομιδές</h3>", unsafe_allow_html=True)
     st.markdown("<h5 style='text-align: center; color: #666; font-style: italic; margin-bottom: 30px;'>Αμεσότητα • Ασφάλεια • Επαγγελματική Φροντίδα</h5>", unsafe_allow_html=True)
     st.write("---")
-    # ΔΙΟΡΘΩΘΗΚΕ: Σωστή εκτύπωση των 4 πρώτων ονομάτων από τη λίστα
     st.markdown(f"""
     ### 🎯 Η Αποστολή μας
-    Με απόλυτο σεβασμό στην ανθρώμινη ζωή, η **ambulance4all** αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
+    Με απόλυτο σεβασμό στην ανθρώμινη ζωή, η **Ambulance4all** αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
 
     ### 🛡️ Πυλώνες της Υπεροχής μας
     * **⚡ Άμεση Ανταπόκριση 24/7:** Λειτουργούμε σε κατάσταση πλήρους επιχειρησιακής ετοιμότητας 365 ημέρες τον χρόνο, εξασφαλίζοντας ελάχιστους χρόνους αναμονής.
@@ -192,7 +190,7 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
         name = current_names[i-1]
         
         with current_col:
-            st.markdown(f"### 2. Live Παρακολούθηση Στόλου")
+            st.markdown(f"### 🚑 {name}")
             if a["active"]:
                 if a["crew"]: st.markdown(f"**👥 Πλήρωμα:** {a['crew']}")
                 st.markdown(f"📍 **Διαδρομή:** {a['origin']} ➔ {a['dest']}")
@@ -219,3 +217,5 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
         c_time1, c_time2 = st.columns(2)
         with c_time1: 
             st.text_input("Ώρα Έναρξης", key="f_time", placeholder="π.χ. 09:30")
+        with c_time2: 
+            st.text_input("Ώρα Τέλους / Άφιξης", key="f_end", placeholder="π.χ. 10:15")
