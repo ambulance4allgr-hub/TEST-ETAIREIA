@@ -27,7 +27,6 @@ def load_data():
 
 def save_data():
     """Αποθηκεύει τα ονόματα και τις διακομιδές μόνιμα στο αρχείο"""
-    # Μαζεύουμε τα τρέχοντα ονόματα από το session state
     names_to_save = [
         st.session_state.get("name_1", "Τ12"),
         st.session_state.get("name_2", "Τ16"),
@@ -47,6 +46,7 @@ def save_data():
 saved_data = load_data()
 
 # --- ΑΡΧΙΚΟΠΟΙΗΣΗ SESSION STATE ---
+# Διορθώθηκε η ανάγνωση των στοιχείων από τη λίστα για να μην κρασάρει η φόρμα
 if "name_1" not in st.session_state: st.session_state["name_1"] = saved_data["names"][0]
 if "name_2" not in st.session_state: st.session_state["name_2"] = saved_data["names"][1]
 if "name_3" not in st.session_state: st.session_state["name_3"] = saved_data["names"][2]
@@ -77,7 +77,6 @@ st.sidebar.write("---")
 st.sidebar.markdown("### ⚙️ Ονοματοδοσία Στόλου")
 st.sidebar.caption("Τροποποιήστε τα ονόματα. Αποθηκεύονται αυτόματα.")
 
-# Κάθε φορά που αλλάζει ένα όνομα, εκτελείται η save_data μέσω του on_change
 st.sidebar.text_input("Όχημα 1", key="name_1", on_change=save_data)
 st.sidebar.text_input("Όχημα 2", key="name_2", on_change=save_data)
 st.sidebar.text_input("Όχημα 3", key="name_3", on_change=save_data)
@@ -115,7 +114,7 @@ def add_trip():
     if p and f_loc and t_loc:
         new_trip = {
             "id": str(uuid.uuid4()), 
-            "date": str(st.session_state.get("f_date")), # Μετατροπή σε string για το json
+            "date": str(st.session_state.get("f_date")), 
             "time": st.session_state.get("f_time", ""), 
             "end": st.session_state.get("f_end", ""), 
             "patient": p, 
@@ -124,7 +123,7 @@ def add_trip():
             "amb": st.session_state.get("f_amb")
         }
         st.session_state.trips.append(new_trip)
-        save_data() # Μόνιμη αποθήκευση της νέας διακομιδής
+        save_data()
         st.session_state.trip_success = True
         st.session_state["f_patient"] = ""
         st.session_state["f_from"] = ""
@@ -148,7 +147,7 @@ def stop_amb(i):
 
 def delete_trip(trip_id):
     st.session_state.trips = [t for t in st.session_state.trips if t["id"] != trip_id]
-    save_data() # Μόνιμη ενημέρωση μετά τη διαγραφή
+    save_data()
 
 # --- 1. ΕΤΑΙΡΙΚΟ ΠΡΟΦΙΛ (ΑΡΧΙΚΗ ΣΕΛΙΔΑ) ---
 if menu == "🏠 Εταιρικό Προφίλ":
@@ -158,7 +157,7 @@ if menu == "🏠 Εταιρικό Προφίλ":
     st.write("---")
     st.markdown(f"""
     ### 🎯 Η Αποστολή μας
-    Με απόλυτο σεβασμό στην ανθρώμινη ζωή, η **ambulance4all** αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
+    Με απόλυτο σεβασμό στην ανθρώμινη ζωή, η **ambulance4all** αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορίς και ιδιώτες.
 
     ### 🛡️ Πυλώνες της Υπεροχής μας
     * **⚡ Άμεση Ανταπόκριση 24/7:** Λειτουργούμε σε κατάσταση πλήρους επιχειρησιακής ετοιμότητας 365 ημέρες τον χρόνο, εξασφαλίζοντας ελάχιστους χρόνους αναμονής.
@@ -216,3 +215,5 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
         st.subheader("📝 Καταχώρηση Νέας Διακομιδής")
         st.text_input("Όνομα Ασθενούς", key="f_patient", placeholder="π.χ. Γεώργιος Παπαδόπουλος")
         st.date_input("Ημερομηνία", key="f_date")
+        c_time1, c_time2 = st.columns(2)
+        with c_time1: st.text_input("Ώρα Έναρξης", key="f_time", placeholder="π.χ. 09:30")
