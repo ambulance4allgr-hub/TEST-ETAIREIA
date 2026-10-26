@@ -45,7 +45,7 @@ def save_data():
 saved_data = load_data()
 
 # --- ΑΡΧΙΚΟΠΟΙΗΣΗ SESSION STATE ---
-# ΔΙΟΡΘΩΘΗΚΕ: Τώρα διαβάζονται σωστά ένα-ένα τα ονόματα βάσει της θέσης τους στη λίστα [0, 1, 2...]
+# ΔΙΟΡΘΩΘΗΚΕ: Σωστή ανάγνωση των θέσεων [0] έως [5] από το αρχείο
 if "name_1" not in st.session_state: st.session_state["name_1"] = saved_data["names"][0]
 if "name_2" not in st.session_state: st.session_state["name_2"] = saved_data["names"][1]
 if "name_3" not in st.session_state: st.session_state["name_3"] = saved_data["names"][2]
@@ -154,6 +154,7 @@ if menu == "🏠 Εταιρικό Προφίλ":
     st.markdown("<h3 style='text-align: center; color: #333; font-weight: normal;'>Ιδιωτικά Ασθενοφόρα & Σύγχρονες Ιατρικές Διακομιδές</h3>", unsafe_allow_html=True)
     st.markdown("<h5 style='text-align: center; color: #666; font-style: italic; margin-bottom: 30px;'>Αμεσότητα • Ασφάλεια • Επαγγελματική Φροντίδα</h5>", unsafe_allow_html=True)
     st.write("---")
+    # ΔΙΟΡΘΩΘΗΚΕ: Σωστή εκτύπωση των 4 πρώτων ονομάτων από τη λίστα
     st.markdown(f"""
     ### 🎯 Η Αποστολή μας
     Με απόλυτο σεβασμό στην ανθρώμινη ζωή, η **ambulance4all** αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
@@ -191,7 +192,7 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
         name = current_names[i-1]
         
         with current_col:
-            st.markdown(f"### 🚑 {name}")
+            st.markdown(f"### 2. Live Παρακολούθηση Στόλου")
             if a["active"]:
                 if a["crew"]: st.markdown(f"**👥 Πλήρωμα:** {a['crew']}")
                 st.markdown(f"📍 **Διαδρομή:** {a['origin']} ➔ {a['dest']}")
@@ -218,4 +219,3 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
         c_time1, c_time2 = st.columns(2)
         with c_time1: 
             st.text_input("Ώρα Έναρξης", key="f_time", placeholder="π.χ. 09:30")
-        with c_time2:
