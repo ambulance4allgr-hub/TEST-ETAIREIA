@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 import uuid
 
-st.set_page_config(page_title="Κέντρο Επιχειρήσεων & Διακομιδών", layout="wide")
+st.set_page_config(page_title="ambulance4all | Κέντρο Επιχειρήσεων", layout="wide")
 
 # --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ ---
 st.sidebar.markdown("### 🚑 Μενού Διαχείρισης")
@@ -11,6 +11,7 @@ menu = st.sidebar.radio("Μεταβείτε στην ενότητα:", ["🏠 Ε
 
 # --- ΑΡΧΙΚΟΠΟΙΗΣΗ DATA (SESSION STATE) ---
 if "names" not in st.session_state:
+    # Αρχικά ονόματα: 4 ενεργά και 2 διαθέσιμα κενά κουτιά
     st.session_state.names = ["Τ12", "Τ16", "Τ16Β", "Τ16Δ", "Κενό 5", "Κενό 6"]
 
 if "amb" not in st.session_state:
@@ -72,16 +73,17 @@ def delete_trip(trip_id):
 
 # --- 1. ΕΤΑΙΡΙΚΟ ΠΡΟΦΙΛ (ΑΡΧΙΚΗ ΣΕΛΙΔΑ) ---
 if menu == "🏠 Εταιρικό Προφίλ":
-    st.markdown("<h1 style='text-align: center; color: #CD1818; font-size: 46px; font-weight: bold;'>🚑 Σύγχρονο Κέντρο Ιατρικών Διακομιδών</h1>", unsafe_allow_html=True)
-    st.markdown("<h4 style='text-align: center; color: #444; font-style: italic; margin-bottom: 30px;'>Αμεσότητα • Ασφάλεια • Επαγγελματική Φροντίδα</h4>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #CD1818; font-size: 50px; font-weight: bold;'>🚑 ambulance4all</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #333; font-weight: normal;'>Ιδιωτικά Ασθενοφόρα & Σύγχρονες Ιατρικές Διακομιδές</h3>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: center; color: #666; font-style: italic; margin-bottom: 30px;'>Αμεσότητα • Ασφάλεια • Επαγγελματική Φροντίδα</h5>", unsafe_allow_html=True)
     st.write("---")
     st.markdown("""
     ### 🎯 Η Αποστολή μας
-    Με απόλυτο σεβασμό στην ανθρώπινη ζωή, η εταιρεία μας αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
+    Με απόλυτο σεβασμό στην ανθρώμινη ζωή, η **ambulance4all** αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
 
     ### 🛡️ Πυλώνες της Υπεροχής μας
     * **⚡ Άμεση Ανταπόκριση 24/7:** Λειτουργούμε σε κατάσταση πλήρους επιχειρησιακής ετοιμότητας 365 ημέρες τον χρόνο, εξασφαλίζοντας ελάχιστους χρόνους αναμονής.
-    * **🚑 Στόλος Υψηλών Προδιαγραφών:** Τα οχήματά μας (συμπεριλαμβανομένων των κορυφαίων μονάδων **Τ12, Τ16, Τ16Β, Τ16Δ**) είναι πλήρως εξοπλισμένα με ιατροτεχνολογικά συστήματα τελευταίας γενιάς.
+    * **🚑 Στόλος Υψηλών Προδιαγραφών:** Τα ιδιωτικά ασθενοφόρα μας (συμπεριλαμβανομένων των κορυφαίων μονάδων **Τ12, Τ16, Τ16Β, Τ16Δ**) είναι πλήρως εξοπλισμένα με ιατροτεχνολογικά συστήματα τελευταίας γενιάς.
     * **👨‍⚕️ Εξειδικευμένα Πληρώματα:** Στελεχωνόμαστε αποκλειστικά από πιστοποιημένους διασώστες, έμπειρους οδηγούς και εξειδικευμένο ιατρικό προσωπικό για τη βέλτιστη διαχείριση κάθε περιστατικού.
     * **🌐 Ψηφιακός Έλεγχος:** Επενδύουμε σε συστήματα ζωντανής παρακολούθησης και διαχείρισης στόλου για τον απόλυτο συντονισμό των δρομολογίων.
     """)
@@ -91,18 +93,19 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     st.title("⏱️ Ζωντανός Έλεγχος & Αντίστροφη Μέτρηση")
     st.subheader("Παρακολούθηση ενεργών δρομολογίων σε πραγματικό χρόνο")
     
-    with st.expander("⚙️ Διαχείριση & Ονοματοδοσία Ασθενοφόρων"):
-        st.info("Εδώ μπορείτε να μετονομάσετε τα 'Κενά' κουτιά όταν ενταχθούν τα νέα ασθενοφόρα.")
+    # ΑΣΦΑΛΗΣ ΜΕΘΟΔΟΣ ΜΕΤΟΝΟΜΑΣΙΑΣ: Αλλάζει τις θέσεις της λίστας χωρίς να την καταστρέφει
+    with st.expander("⚙️ Διαχείριση & Ονοματοδοσία Στόλου (Επεξεργασία των 6 Οχημάτων)"):
+        st.info("Εδώ μπορείτε να αλλάξετε τα ονόματα των ασθενοφόρων σας. Οι αλλαγές θα εφαρμοστούν αυτόματα σε όλη την εφαρμογή.")
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.session_state.names[0] = st.text_input("Όνομα 1", st.session_state.names[0])
-            st.session_state.names[1] = st.text_input("Όνομα 2", st.session_state.names[1])
+            st.session_state.names[0] = st.text_input("Όχημα 1", value=st.session_state.names[0])
+            st.session_state.names[1] = st.text_input("Όχημα 2", value=st.session_state.names[1])
         with c2:
-            st.session_state.names[2] = st.text_input("Όνομα 3", st.session_state.names[2])
-            st.session_state.names[3] = st.text_input("Όνομα 4", st.session_state.names[3])
+            st.session_state.names[2] = st.text_input("Όχημα 3", value=st.session_state.names[2])
+            st.session_state.names[3] = st.text_input("Όνομα 4", value=st.session_state.names[3])
         with c3:
-            st.session_state.names[4] = st.text_input("Όνομα 5", st.session_state.names[4])
-            st.session_state.names[5] = st.text_input("Όνομα 6", st.session_state.names[5])
+            st.session_state.names[4] = st.text_input("Όχημα 5 (Διαθέσιμο για αλλαγή)", value=st.session_state.names[4])
+            st.session_state.names[5] = st.text_input("Όχημα 6 (Διαθέσιμο για αλλαγή)", value=st.session_state.names[5])
 
     @st.fragment(run_every=1.0)
     def live_countdown_widget(i):
@@ -118,6 +121,7 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
             else:
                 st.success("✅ Το όχημα έφτασε!")
 
+    # Εμφάνιση των 6 οχημάτων ανά 3άδες στην οθόνη
     cols = st.columns(3)
     for i in range(1, 7):
         current_col = cols[(i-1) % 3]
@@ -153,6 +157,8 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
         with c_time2: st.text_input("Ώρα Τέλους", key="f_end", placeholder="π.χ. 10:15")
         st.text_input("Τοποθεσία Παραλαβής (Από)", key="f_from")
         st.text_input("Τοποθεσία Προορισμού (Προς)", key="f_to")
+        
+        # Η λίστα επιλογής ενημερώνεται δυναμικά με τα σωστά ονόματα των 6 οχημάτων
         st.selectbox("Ανάθεση σε Ασθενοφόρο", st.session_state.names, key="f_amb")
         st.button("💾 Αποθήκευση στο Πρόγραμμα", type="primary", on_click=add_trip, use_container_width=True)
         
@@ -165,6 +171,8 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
 
     with view_col:
         st.subheader("📅 Προγραμματισμένα Δρομολόγια ανά Όχημα")
+        
+        # Τα Tabs παίρνουν δυναμικά τα ονόματα (ακόμα και αν μετονομάσεις τα Κενά 5 και 6)
         tabs = st.tabs([f"🚑 {name}" for name in st.session_state.names])
         for index, amb_name in enumerate(st.session_state.names):
             with tabs[index]:
@@ -176,6 +184,3 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
                     for trip in amb_trips:
                         with st.container(border=True):
                             st.markdown(f"👤 **Ασθενής:** {trip['patient']}")
-                            st.markdown(f"📅 **Ημερομηνία:** {trip['date']} | 🕒 **Ώρα:** {trip['time']} - {trip['end']}")
-                            st.markdown(f"📍 **Διαδρομή:** {trip['from']} ➔ {trip['to']}")
-                            st.button("🗑️ Διαγραφή", key=f"del_{trip['id']}", on_click=delete_trip, args=(trip['id'],), type="secondary")
