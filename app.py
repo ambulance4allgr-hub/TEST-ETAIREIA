@@ -6,7 +6,6 @@ import uuid
 st.set_page_config(page_title="ambulance4all | Κέντρο Επιχειρήσεων", layout="wide")
 
 # --- ΑΡΧΙΚΟΠΟΙΗΣΗ DATA (SESSION STATE) ---
-# Αρχικοποιούμε τα ονόματα ξεχωριστά στη μνήμη για να μην χάνονται ποτέ
 if "name_1" not in st.session_state: st.session_state["name_1"] = "Τ12"
 if "name_2" not in st.session_state: st.session_state["name_2"] = "Τ16"
 if "name_3" not in st.session_state: st.session_state["name_3"] = "Τ16Β"
@@ -30,14 +29,13 @@ if "trips" not in st.session_state:
     st.session_state.trips = []
 
 # --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ & ΔΙΑΧΕΙΡΙΣΗ ΟΝΟΜΑΤΩΝ ---
-st.sidebar.markdown("### 🚑 Μενού Διαχείρισης")
+st.sidebar.markdown("### 🚑 ambulance4all")
 menu = st.sidebar.radio("Μεταβείτε στην ενότητα:", ["🏠 Εταιρικό Προφίλ", "⏱️ Live Παρακολούθηση Στόλου", "📋 Προγραμματισμός Διακομιδών"])
 
 st.sidebar.write("---")
 st.sidebar.markdown("### ⚙️ Ονοματοδοσία Στόλου")
-st.sidebar.caption("Τροποποιήστε τα ονόματα των οχημάτων ανά πάσα στιγμή. Οι αλλαγές εφαρμόζονται αυτόματα παντού.")
+st.sidebar.caption("Τροποποιήστε τα ονόματα των οχημάτων ανά πάσα στιγμή.")
 
-# Τα text inputs συνδέονται απευθείας με τη μνήμη μέσω του key
 st.sidebar.text_input("Όχημα 1", key="name_1")
 st.sidebar.text_input("Όχημα 2", key="name_2")
 st.sidebar.text_input("Όχημα 3", key="name_3")
@@ -45,15 +43,28 @@ st.sidebar.text_input("Όχημα 4", key="name_4")
 st.sidebar.text_input("Όχημα 5", key="name_5")
 st.sidebar.text_input("Όχημα 6", key="name_6")
 
-# Δημιουργία της δυναμικής λίστας ονομάτων βάσει των inputs του χρήστη
-current_names = [
-    st.session_state["name_1"],
-    st.session_state["name_2"],
-    st.session_state["name_3"],
-    st.session_state["name_4"],
-    st.session_state["name_5"],
-    st.session_state["name_6"]
+# --- ΑΣΦΑΛΗΣ ΕΞΥΓΙΑΝΣΗ ΟΝΟΜΑΤΩΝ (FAIL-SAFE) ---
+# Διασφαλίζει ότι δεν θα υπάρξουν κενά ή διπλότυπα ονόματα που κρασάρουν τα Tabs
+raw_names = [
+    st.session_state["name_1"].strip(),
+    st.session_state["name_2"].strip(),
+    st.session_state["name_3"].strip(),
+    st.session_state["name_4"].strip(),
+    st.session_state["name_5"].strip(),
+    st.session_state["name_6"].strip()
 ]
+
+current_names = []
+seen = set()
+for idx, name in enumerate(raw_names, 1):
+    # Αν το όνομα είναι κενό ή έχει ήδη χρησιμοποιηθεί, δώσε ένα έγκυρο μοναδικό όνομα
+    if not name or name in seen:
+        fallback = f"Όχημα {idx}"
+        current_names.append(fallback)
+        seen.add(fallback)
+    else:
+        current_names.append(name)
+        seen.add(name)
 
 # --- ΣΥΝΑΡΤΗΣΕΙΣ LOGIC ---
 def add_trip():
@@ -109,7 +120,7 @@ if menu == "🏠 Εταιρικό Προφίλ":
 
     ### 🛡️ Πυλώνες της Υπεροχής μας
     * **⚡ Άμεση Ανταπόκριση 24/7:** Λειτουργούμε σε κατάσταση πλήρους επιχειρησιακής ετοιμότητας 365 ημέρες τον χρόνο, εξασφαλίζοντας ελάχιστους χρόνους αναμονής.
-    * **🚑 Στόλος Υψηλών Προδιαγραφών:** Τα ιδιωτικά ασθενοφόρα μας (συμπεριλαμβανομένων των κορυφαίων μονάδων **{st.session_state['name_1']}, {st.session_state['name_2']}, {st.session_state['name_3']}, {st.session_state['name_4']}**) είναι πλήρως εξοπλισμένα με ιατροτεχνολογικά συστήματα τελευταίας γενιάς.
+    * **🚑 Στόλος Υψηλών Προδιαγραφών:** Τα ιδιωτικά ασθενοφόρα μας (συμπεριλαμβανομένων των κορυφαίων μονάδων **{current_names[0]}, {current_names[1]}, {current_names[2]}, {current_names[3]}**) είναι πλήρως εξοπλισμένα με ιατροτεχνολογικά συστήματα τελευταίας γενιάς.
     * **👨‍⚕️ Εξειδικευμένα Πληρώματα:** Στελεχωνόμαστε αποκλειστικά από πιστοποιημένους διασώστες, έμπειρους οδηγούς και εξειδικευμένο ιατρικό προσωπικό για τη βέλτιστη διαχείριση κάθε περιστατικού.
     * **🌐 Ψηφιακός Έλεγχος:** Επενδύουμε σε συστήματα ζωντανής παρακολούθησης και διαχείρισης στόλου για τον απόλυτο συντονισμό των δρομολογίων.
     """)
@@ -137,7 +148,7 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     for i in range(1, 7):
         current_col = cols[(i-1) % 3]
         a = st.session_state.amb[i]
-        name = current_names[i-1] # Παίρνει δυναμικά το όνομα από το sidebar
+        name = current_names[i-1]
         
         with current_col:
             st.markdown(f"### 🚑 {name}")
@@ -168,8 +179,6 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
         with c_time2: st.text_input("Ώρα Τέλους", key="f_end", placeholder="π.χ. 10:15")
         st.text_input("Τοποθεσία Παραλαβής (Από)", key="f_from")
         st.text_input("Τοποθεσία Προορισμού (Προς)", key="f_to")
-        
-        # Το μενού επιλογής ενημερώνεται αυτόματα με τα ονόματα του sidebar
         st.selectbox("Ανάθεση σε Ασθενοφόρο", current_names, key="f_amb")
         st.button("💾 Αποθήκευση στο Πρόγραμμα", type="primary", on_click=add_trip, use_container_width=True)
         
@@ -182,8 +191,6 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
 
     with view_col:
         st.subheader("📅 Προγραμματισμένα Δρομολόγια ανά Όχημα")
-        
-        # Τα Tabs παίρνουν δυναμικά τα ονόματα από το sidebar
         tabs = st.tabs([f"🚑 {name}" for name in current_names])
         for index, amb_name in enumerate(current_names):
             with tabs[index]:
@@ -193,4 +200,3 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
                     st.info(f"Δεν υπάρχουν διακομιδές για το όχημα {amb_name}.")
                 else:
                     for trip in amb_trips:
-                        with st.container(border=True):
