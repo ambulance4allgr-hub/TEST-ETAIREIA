@@ -129,7 +129,6 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
     st.text_input("Προς", key="f_to")
     st.selectbox("Επιλογή Ασθενοφόρου", st.session_state.names, key="f_amb")
     st.text_input("Σημειώσεις", key="f_notes")
-    
     st.button("Καταχώρηση", type="primary", on_click=add_trip)
     
     if st.session_state.get("trip_success") =
