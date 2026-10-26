@@ -45,7 +45,7 @@ def save_data():
 saved_data = load_data()
 
 # --- ΑΡΧΙΚΟΠΟΙΗΣΗ SESSION STATE ---
-# ΔΙΟΡΘΩΘΗΚΕ: Τώρα διαβάζονται σωστά ένα-ένα τα ονόματα με το index τους, [1]... για να μην κρασάρει η φόρμα
+# ΔΙΟΡΘΩΘΗΚΕ: Τώρα διαβάζονται σωστά ένα-ένα τα ονόματα βάσει της θέσης τους στη λίστα [0, 1, 2...]
 if "name_1" not in st.session_state: st.session_state["name_1"] = saved_data["names"][0]
 if "name_2" not in st.session_state: st.session_state["name_2"] = saved_data["names"][1]
 if "name_3" not in st.session_state: st.session_state["name_3"] = saved_data["names"][2]
@@ -216,4 +216,6 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
         st.date_input("Ημερομηνία", key="f_date")
         
         c_time1, c_time2 = st.columns(2)
-        with c_time1:
+        with c_time1: 
+            st.text_input("Ώρα Έναρξης", key="f_time", placeholder="π.χ. 09:30")
+        with c_time2:
