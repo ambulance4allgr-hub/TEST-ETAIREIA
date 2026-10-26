@@ -78,15 +78,9 @@ elif menu == "🚑 Live Παρακολούθηση":
         for i in range(1, 7):
             a = st.session_state.amb[i]
             st.write("---")
-            if not a["active"]:
-                a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"c_{i}", placeholder="Ονόματα")
-                a["origin"] = st.text_input("Από", key=f"o_{i}")
-                a["dest"] = st.text_input("Προς", key=f"d_{i}")
-                st.number_input("Λεπτά", min_value=1, max_value=180, value=15, key=f"m_{i}")
-                st.button("▶ Έναρξη", key=f"b_{i}", type="primary", on_click=start_amb, args=(i,))
-                st.markdown(f"### 🚑 {st.session_state.names[i-1]}")
-            else:
-                st.markdown(f"### 🚑 {st.session_state.names[i-1]}")
+            st.markdown(f"### 🚑 {st.session_state.names[i-1]}")
+            
+            if a["active"]:
                 if a["crew"]:
                     st.write(f"👥 {a['crew']}")
                 st.write(f"📍 {a['origin']} ➔ {a['dest']}")
@@ -102,6 +96,12 @@ elif menu == "🚑 Live Παρακολούθηση":
                 else:
                     st.success("✅ Έφτασε!")
                 st.button("⏹ Τερματισμός", key=f"s_{i}", on_click=stop_amb, args=(i,))
+            else:
+                a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"c_{i}", placeholder="Ονόματα")
+                a["origin"] = st.text_input("Από", key=f"o_{i}")
+                a["dest"] = st.text_input("Προς", key=f"d_{i}")
+                st.number_input("Λεπτά", min_value=1, max_value=180, value=15, key=f"m_{i}")
+                st.button("▶ Έναρξη", key=f"b_{i}", type="primary", on_click=start_amb, args=(i,))
     draw_ambulances()
 
 elif menu == "📋 Πρόγραμμα Διακομιδών":
@@ -132,8 +132,12 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
     else:
         st.subheader("Πρόγραμμα ανά Ασθενοφόρο")
-        # Χρησιμοποιούμε απλό loop χωρίς στήλες για να μην σπάει ο κώδικας
-        for idx, amb_name in enumerate(st.session_state.names):
-            st.markdown(f"### 🚑 {amb_name}")
+        for amb_name in st.session_state.names:
+            st.markdown(f"#### 🚑 {amb_name}")
             amb_trips = [t for t in st.session_state.trips if t['amb'] == amb_name]
-            amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['t
+            amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
+            
+            if not amb_trips:
+                st.write("Κενό.")
+            else:
+                for trip in amb_trips:
