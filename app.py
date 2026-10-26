@@ -79,7 +79,6 @@ elif menu == "🚑 Live Παρακολούθηση":
             a = st.session_state.amb[i]
             st.write("---")
             if not a["active"]:
-                # Χρησιμοποιούμε πολύ απλές γραμμές, χωρίς πολλά κουτιά
                 a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"c_{i}", placeholder="Ονόματα")
                 a["origin"] = st.text_input("Από", key=f"o_{i}")
                 a["dest"] = st.text_input("Προς", key=f"d_{i}")
@@ -133,9 +132,8 @@ elif menu == "📋 Πρόγραμμα Διακομιδών":
         st.info("Δεν υπάρχουν προγραμματισμένες διακομιδές.")
     else:
         st.subheader("Πρόγραμμα ανά Ασθενοφόρο")
-        # Εδώ εμφανίζουμε τις στήλες με τις διακομιδές
-        cols = st.columns(6)
+        # Χρησιμοποιούμε απλό loop χωρίς στήλες για να μην σπάει ο κώδικας
         for idx, amb_name in enumerate(st.session_state.names):
-            with cols[idx]:
-                st.markdown(f"### 🚑 {amb_name}")
-                amb_trips = [t for t in st.session_s
+            st.markdown(f"### 🚑 {amb_name}")
+            amb_trips = [t for t in st.session_state.trips if t['amb'] == amb_name]
+            amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['t
