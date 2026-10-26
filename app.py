@@ -7,7 +7,6 @@ st.set_page_config(page_title="Κέντρο Ελέγχου Εταιρείας", 
 st.sidebar.title("Μενού Εφαρμογής")
 menu = st.sidebar.radio("Επιλέξτε Ενότητα:", ["🏠 Αρχική", "🚑 Live Παρακολούθηση", "📋 Πρόγραμμα Διακομιδών"])
 
-# --- ΑΡΧΙΚΟΠΟΙΗΣΗ ΔΕΔΟΜΕΝΩΝ ---
 if "names" not in st.session_state:
     st.session_state.names = ["Τ12", "Τ16", "Τ16Β", "Τ16Δ", "Κενό 5", "Κενό 6"]
 
@@ -19,24 +18,12 @@ if "amb" not in st.session_state:
 if "trips" not in st.session_state:
     st.session_state.trips = []
 
-# --- ΣΥΝΑΡΤΗΣΕΙΣ ΓΙΑ ΤΑ ΚΟΥΜΠΙΑ (Callbacks) ---
 def add_trip():
     p = st.session_state.get("f_patient", "")
     f_loc = st.session_state.get("f_from", "")
     t_loc = st.session_state.get("f_to", "")
-    
     if p and f_loc and t_loc:
-        new_trip = {
-            "id": str(uuid.uuid4()), 
-            "date": str(st.session_state.get("f_date")), 
-            "time": st.session_state.get("f_time", ""), 
-            "end": st.session_state.get("f_end", ""), 
-            "patient": p, 
-            "from": f_loc, 
-            "to": t_loc, 
-            "amb": st.session_state.get("f_amb"), 
-            "notes": st.session_state.get("f_notes", "")
-        }
+        new_trip = {"id": str(uuid.uuid4()), "date": str(st.session_state.get("f_date")), "time": st.session_state.get("f_time", ""), "end": st.session_state.get("f_end", ""), "patient": p, "from": f_loc, "to": t_loc, "amb": st.session_state.get("f_amb"), "notes": st.session_state.get("f_notes", "")}
         st.session_state.trips.append(new_trip)
         st.session_state.trip_success = True
     else:
@@ -56,35 +43,25 @@ def stop_amb(i):
 def delete_trip(trip_id):
     st.session_state.trips = [t for t in st.session_state.trips if t["id"] != trip_id]
 
-# ==========================================
-# ΑΡΧΙΚΗ ΣΕΛΙΔΑ
-# ==========================================
 if menu == "🏠 Αρχική":
     st.markdown("<h1 style='text-align: center; color: #FF4B4B; font-size: 50px;'>🚑 Καλώς ήρθατε</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align: center; color: #555;'>Ηγετική Παρουσία στις Υπηρεσίες Υγείας και Διακομιδών</h3>", unsafe_allow_html=True)
     st.write("---")
-    
     st.markdown("""
     ### 🏆 Το Όραμά μας
     Στην εταιρεία μας, δεσμευόμαστε στην παροχή υπηρεσιών διακομιδής και άμεσης ανταπόκρισης υψηλών προδιαγραφών. Θέτουμε ως προτεραιότητα την ασφάλεια, την αξιοπιστία και την άριστη εξυπηρέτηση των ασθενών, αποτελώντας τον αξιόπιστο συνεργάτη των νοσηλευτικών ιδρυμάτων και των οικογενειών.
-
     ### 🚑 Σύγχρονος Στόλος & Τεχνολογία
-    Επενδύουμε διαρκώς στον εκσυγχρονισμό του εξοπλισμού μας. Ο στόλος των ασθενοφόρων μας τηρεί τις αυστηρότερες προδιαγραφές ασφαλείας και είναι εξοπλισμένος με προηγμένα συστήματα ιατρικής υποστήριξης. Κάθε μεταφορά πραγματοποιείται με γνώμονα τη μέγιστη δυνατή φροντίδα και άνεση για τον ασθενή.
-
+    Επενδύουμε διαρκώς στον εκσυγχρονισμό του εξοπλισμού μας. Ο στόλος των ασθενοφόρων μας τηρεί τις αυστηρότερες προδιαγραφές ασφαλείας και είναι εξοπλισμένος με προηγμένα συστήματα ιατρικής υποστήριξης.
     ### 👨‍⚕️ Εξειδικευμένο Ανθρώπινο Δυναμικό
-    Η δύναμή μας έγκειται στους ανθρώπους μας. Τα πληρώματα των ασθενοφόρων στελεχώνονται αποκλειστικά από πιστοποιημένους διασώστες και έμπειρους οδηγούς. Με υψηλό αίσθημα ευθύνης και επαγγελματισμό, διαχειρίζονται κάθε περιστατικό με ακρίβεια, εχεμύθεια και σεβασμό προς τον άνθρωπο.
-
+    Η δύναμή μας έγκειται στους ανθρώπους μας. Τα πληρώματα στελεχώνονται αποκλειστικά από πιστοποιημένους διασώστες και έμπειρους οδηγούς. Με υψηλό αίσθημα ευθύνης διαχειρίζονται κάθε περιστατικό με ακρίβεια και σεβασμό.
     ### ⏱️ Διαθεσιμότητα 24/7
-    Αντιλαμβανόμαστε ότι οι ανάγκες για μεταφορά ασθενών δεν έχουν ωράριο. Γι' αυτόν τον λόγο, οι υπηρεσίες μας βρίσκονται σε πλήρη επιχειρησιακή ετοιμότητα **24 ώρες το 24ωρο, 365 ημέρες τον χρόνο**, έτοιμες να ανταποκριθούν άμεσα και αποτελεσματικά σε κάθε κάλεσμα.
+    Οι υπηρεσίες μας βρίσκονται σε πλήρη επιχειρησιακή ετοιμότητα 24 ώρες το 24ωρο, 365 ημέρες τον χρόνο.
     """)
 
-# ==========================================
-# LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ
-# ==========================================
 elif menu == "🚑 Live Παρακολούθηση":
     st.title("🚑 Κέντρο Παρακολούθησης Ασθενοφόρων")
     
-    with st.expander("⚙️ Επεξεργασία Ονομάτων (Αποθηκεύονται αυτόματα)"):
+    with st.expander("⚙️ Επεξεργασία Ονομάτων"):
         c1, c2, c3 = st.columns(3)
         with c1:
             st.session_state.names[0] = st.text_input("Όνομα 1", st.session_state.names[0])
@@ -136,4 +113,23 @@ elif menu == "🚑 Live Παρακολούθηση":
                         else:
                             st.success("✅ Έφτασε!")
                     with col_btn:
-                        st.
+                        st.write("")
+                        st.button("⏹", key=f"s_{i}", use_container_width=True, on_click=stop_amb, args=(i,))
+    draw_ambulances()
+
+elif menu == "📋 Πρόγραμμα Διακομιδών":
+    st.title("📋 Πρόγραμμα Διακομιδών")
+    st.subheader("Καταχώρηση Νέας Διακομιδής")
+    
+    st.text_input("Όνομα Ασθενούς", key="f_patient")
+    st.date_input("Ημερομηνία", key="f_date")
+    st.text_input("Ώρα Έναρξης", key="f_time")
+    st.text_input("Ώρα Τέλους", key="f_end")
+    st.text_input("Από", key="f_from")
+    st.text_input("Προς", key="f_to")
+    st.selectbox("Επιλογή Ασθενοφόρου", st.session_state.names, key="f_amb")
+    st.text_input("Σημειώσεις", key="f_notes")
+    
+    st.button("Καταχώρηση", type="primary", on_click=add_trip)
+    
+    if st.session_state.get("trip_success") =
