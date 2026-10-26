@@ -2,16 +2,57 @@ import streamlit as st
 import time
 from datetime import datetime, timedelta
 import uuid
+import json
+import os
 
 st.set_page_config(page_title="ambulance4all | Κέντρο Επιχειρήσεων", layout="wide")
 
-# --- ΑΡΧΙΚΟΠΟΙΗΣΗ DATA (SESSION STATE) ---
-if "name_1" not in st.session_state: st.session_state["name_1"] = "Τ12"
-if "name_2" not in st.session_state: st.session_state["name_2"] = "Τ16"
-if "name_3" not in st.session_state: st.session_state["name_3"] = "Τ16Β"
-if "name_4" not in st.session_state: st.session_state["name_4"] = "Τ16Δ"
-if "name_5" not in st.session_state: st.session_state["name_5"] = "Κενό 5"
-if "name_6" not in st.session_state: st.session_state["name_6"] = "Κενό 6"
+# --- ΑΡΧΕΙΑ ΜΟΝΙΜΗΣ ΑΠΟΘΗΚΕΥΣΗΣ ---
+DATA_FILE = "ambulance_data.json"
+
+def load_data():
+    """Φορτώνει τα δεδομένα από το αρχείο αν υπάρχει, αλλιώς επιστρέφει αρχικές τιμές"""
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    
+    # Αρχικές τιμές αν το αρχείο δεν υπάρχει ακόμα
+    return {
+        "names": ["Τ12", "Τ16", "Τ16Β", "Τ16Δ", "Κενό 5", "Κενό 6"],
+        "trips": []
+    }
+
+def save_data():
+    """Αποθηκεύει τα ονόματα και τις διακομιδές μόνιμα στο αρχείο"""
+    # Μαζεύουμε τα τρέχοντα ονόματα από το session state
+    names_to_save = [
+        st.session_state.get("name_1", "Τ12"),
+        st.session_state.get("name_2", "Τ16"),
+        st.session_state.get("name_3", "Τ16Β"),
+        st.session_state.get("name_4", "Τ16Δ"),
+        st.session_state.get("name_5", "Κενό 5"),
+        st.session_state.get("name_6", "Κενό 6")
+    ]
+    data = {
+        "names": names_to_save,
+        "trips": st.session_state.trips
+    }
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+# Φόρτωση των μόνιμων δεδομένων κατά την εκκίνηση
+saved_data = load_data()
+
+# --- ΑΡΧΙΚΟΠΟΙΗΣΗ SESSION STATE ---
+if "name_1" not in st.session_state: st.session_state["name_1"] = saved_data["names"][0]
+if "name_2" not in st.session_state: st.session_state["name_2"] = saved_data["names"][1]
+if "name_3" not in st.session_state: st.session_state["name_3"] = saved_data["names"][2]
+if "name_4" not in st.session_state: st.session_state["name_4"] = saved_data["names"][3]
+if "name_5" not in st.session_state: st.session_state["name_5"] = saved_data["names"][4]
+if "name_6" not in st.session_state: st.session_state["name_6"] = saved_data["names"][5]
 
 if "amb" not in st.session_state:
     st.session_state.amb = {}
@@ -26,7 +67,7 @@ if "amb" not in st.session_state:
         }
 
 if "trips" not in st.session_state:
-    st.session_state.trips = []
+    st.session_state.trips = saved_data["trips"]
 
 # --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ & ΔΙΑΧΕΙΡΙΣΗ ΟΝΟΜΑΤΩΝ ---
 st.sidebar.markdown("### 🚑 ambulance4all")
@@ -34,17 +75,17 @@ menu = st.sidebar.radio("Μεταβείτε στην ενότητα:", ["🏠 Ε
 
 st.sidebar.write("---")
 st.sidebar.markdown("### ⚙️ Ονοματοδοσία Στόλου")
-st.sidebar.caption("Τροποποιήστε τα ονόματα των οχημάτων ανά πάσα στιγμή.")
+st.sidebar.caption("Τροποποιήστε τα ονόματα. Αποθηκεύονται αυτόματα.")
 
-st.sidebar.text_input("Όχημα 1", key="name_1")
-st.sidebar.text_input("Όχημα 2", key="name_2")
-st.sidebar.text_input("Όχημα 3", key="name_3")
-st.sidebar.text_input("Όχημα 4", key="name_4")
-st.sidebar.text_input("Όχημα 5", key="name_5")
-st.sidebar.text_input("Όχημα 6", key="name_6")
+# Κάθε φορά που αλλάζει ένα όνομα, εκτελείται η save_data μέσω του on_change
+st.sidebar.text_input("Όχημα 1", key="name_1", on_change=save_data)
+st.sidebar.text_input("Όχημα 2", key="name_2", on_change=save_data)
+st.sidebar.text_input("Όχημα 3", key="name_3", on_change=save_data)
+st.sidebar.text_input("Όχημα 4", key="name_4", on_change=save_data)
+st.sidebar.text_input("Όχημα 5", key="name_5", on_change=save_data)
+st.sidebar.text_input("Όχημα 6", key="name_6", on_change=save_data)
 
-# --- ΑΣΦΑΛΗΣ ΕΞΥΓΙΑΝΣΗ ΟΝΟΜΑΤΩΝ (FAIL-SAFE) ---
-# Διασφαλίζει ότι δεν θα υπάρξουν κενά ή διπλότυπα ονόματα που κρασάρουν τα Tabs
+# --- ΑΣΦΑΛΗΣ ΕΞΥΓΙΑΝΣΗ ΟΝΟΜΑΤΩΝ ---
 raw_names = [
     st.session_state["name_1"].strip(),
     st.session_state["name_2"].strip(),
@@ -57,7 +98,6 @@ raw_names = [
 current_names = []
 seen = set()
 for idx, name in enumerate(raw_names, 1):
-    # Αν το όνομα είναι κενό ή έχει ήδη χρησιμοποιηθεί, δώσε ένα έγκυρο μοναδικό όνομα
     if not name or name in seen:
         fallback = f"Όχημα {idx}"
         current_names.append(fallback)
@@ -75,7 +115,7 @@ def add_trip():
     if p and f_loc and t_loc:
         new_trip = {
             "id": str(uuid.uuid4()), 
-            "date": st.session_state.get("f_date"), 
+            "date": str(st.session_state.get("f_date")), # Μετατροπή σε string για το json
             "time": st.session_state.get("f_time", ""), 
             "end": st.session_state.get("f_end", ""), 
             "patient": p, 
@@ -84,6 +124,7 @@ def add_trip():
             "amb": st.session_state.get("f_amb")
         }
         st.session_state.trips.append(new_trip)
+        save_data() # Μόνιμη αποθήκευση της νέας διακομιδής
         st.session_state.trip_success = True
         st.session_state["f_patient"] = ""
         st.session_state["f_from"] = ""
@@ -107,6 +148,7 @@ def stop_amb(i):
 
 def delete_trip(trip_id):
     st.session_state.trips = [t for t in st.session_state.trips if t["id"] != trip_id]
+    save_data() # Μόνιμη ενημέρωση μετά τη διαγραφή
 
 # --- 1. ΕΤΑΙΡΙΚΟ ΠΡΟΦΙΛ (ΑΡΧΙΚΗ ΣΕΛΙΔΑ) ---
 if menu == "🏠 Εταιρικό Προφίλ":
@@ -174,29 +216,3 @@ elif menu == "📋 Προγραμματισμός Διακομιδών":
         st.subheader("📝 Καταχώρηση Νέας Διακομιδής")
         st.text_input("Όνομα Ασθενούς", key="f_patient", placeholder="π.χ. Γεώργιος Παπαδόπουλος")
         st.date_input("Ημερομηνία", key="f_date")
-        c_time1, c_time2 = st.columns(2)
-        with c_time1: st.text_input("Ώρα Έναρξης", key="f_time", placeholder="π.χ. 09:30")
-        with c_time2: st.text_input("Ώρα Τέλους", key="f_end", placeholder="π.χ. 10:15")
-        st.text_input("Τοποθεσία Παραλαβής (Από)", key="f_from")
-        st.text_input("Τοποθεσία Προορισμού (Προς)", key="f_to")
-        st.selectbox("Ανάθεση σε Ασθενοφόρο", current_names, key="f_amb")
-        st.button("💾 Αποθήκευση στο Πρόγραμμα", type="primary", on_click=add_trip, use_container_width=True)
-        
-        if st.session_state.get("trip_success") is True:
-            st.success("✔️ Η διακομιδή καταχωρήθηκε!")
-            st.session_state.trip_success = None
-        elif st.session_state.get("trip_success") is False:
-            st.error("❌ Σφάλμα: Συμπληρώστε Ασθενή, Από και Προς.")
-            st.session_state.trip_success = None
-
-    with view_col:
-        st.subheader("📅 Προγραμματισμένα Δρομολόγια ανά Όχημα")
-        tabs = st.tabs([f"🚑 {name}" for name in current_names])
-        for index, amb_name in enumerate(current_names):
-            with tabs[index]:
-                amb_trips = [t for t in st.session_state.trips if t['amb'] == amb_name]
-                amb_trips = sorted(amb_trips, key=lambda x: (str(x['date']), str(x['time'])))
-                if not amb_trips:
-                    st.info(f"Δεν υπάρχουν διακομιδές για το όχημα {amb_name}.")
-                else:
-                    for trip in amb_trips:
