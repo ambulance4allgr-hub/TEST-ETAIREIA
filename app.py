@@ -48,7 +48,7 @@ def add_trip():
         }
         st.session_state.trips.append(new_trip)
         st.session_state.trip_success = True
-        # Καθαρισμός
+        # Καθαρισμός φορμών
         st.session_state["f_patient"] = ""
         st.session_state["f_from"] = ""
         st.session_state["f_to"] = ""
@@ -80,7 +80,7 @@ if menu == "🏠 Εταιρικό Προφίλ":
     
     st.markdown("""
     ### 🎯 Η Αποστολή μας
-    Με απόλυτο σεβασμό στην ανθρώπινη ζωή, η εταιρεία μας αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
+    Με απόλυτο σεβασμό στην ανθρώμινη ζωή, η εταιρεία μας αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
 
     ### 🛡️ Πυλώνες της Υπεροχής μας
     
@@ -99,14 +99,14 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
         st.info("Εδώ μπορείτε να μετονομάσετε τα 'Κενά' κουτιά όταν ενταχθούν τα 2 νέα ασθενοφόρα σας.")
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.session_state.names[0] = st.text_input("Όχημα 1", st.session_state.names[0])
-            st.session_state.names[1] = st.text_input("Όχημα 2", st.session_state.names[1])
+            st.session_state.names[0] = st.text_input("Όνομα 1", st.session_state.names[0])
+            st.session_state.names[1] = st.text_input("Όνομα 2", st.session_state.names[1])
         with c2:
-            st.session_state.names[2] = st.text_input("Όχημα 3", st.session_state.names[2])
-            st.session_state.names[3] = st.text_input("Όχημα 4", st.session_state.names[3])
+            st.session_state.names[2] = st.text_input("Όνομα 3", st.session_state.names[2])
+            st.session_state.names[3] = st.text_input("Όνομα 4", st.session_state.names[3])
         with c3:
-            st.session_state.names[4] = st.text_input("Όχημα 5 (Κενό)", st.session_state.names[4])
-            st.session_state.names[5] = st.text_input("Όχημα 6 (Κενό)", st.session_state.names[5])
+            st.session_state.names[4] = st.text_input("Όνομα 5 (Κενό)", st.session_state.names[4])
+            st.session_state.names[5] = st.text_input("Όνομα 6 (Κενό)", st.session_state.names[5])
 
     # Απομονωμένο Fragment: Ανανεώνεται ΜΟΝΟ η αντίστροφη μέτρηση ανά 1 δευτερόλεπτο
     @st.fragment(run_every=1.0)
@@ -148,7 +148,7 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
                 a["origin"] = st.text_input("Από", value=a["origin"], key=f"orig_{i}", placeholder="Σημείο Παραλαβής")
                 a["dest"] = st.text_input("Προς", value=a["dest"], key=f"dest_{i}", placeholder="Νοσοκομείο / Κλινική")
                 a["total_mins"] = st.number_input("Εκτιμώμενος Χρόνος (Λεπτά)", min_value=1, max_value=240, value=int(a["total_mins"]), key=f"mins_{i}")
-                st.button("▶️ Έναρξη Κίνησης", key=f"start_{i}", type="primary", on_click=start_amb, args=(i,), use_container_width=True)
+                st.button("▶️ Έναρξης Κίνησης", key=f"start_{i}", type="primary", on_click=start_amb, args=(i,), use_container_width=True)
             st.write("---")
 
 # --- 3. ΠΡΟΓΡΑΜΜΑ ΔΙΑΚΟΜΙΔΩΝ ---
