@@ -44,6 +44,7 @@ def save_data():
 saved_data = load_data()
 
 # --- ΑΡΧΙΚΟΠΟΙΗΣΗ SESSION STATE ---
+# Σωστή ανάγνωση των θέσεων [0, 1, 2, 3, 4, 5] από τη λίστα για αποφυγή κρασαρίσματος
 if "name_1" not in st.session_state: st.session_state["name_1"] = saved_data["names"][0]
 if "name_2" not in st.session_state: st.session_state["name_2"] = saved_data["names"][1]
 if "name_3" not in st.session_state: st.session_state["name_3"] = saved_data["names"][2]
@@ -166,10 +167,9 @@ if menu == "🏠 Εταιρικό Προφίλ":
 # --- 2. LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ ΣΤΟΛΟΥ ---
 elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     st.title("⏱️ Ζωντανός Έλεγχος Στόλου & Κίνησης")
-    
-    # ΕΝΣΩΜΑΤΩΣΗ GOOGLE MAPS ΜΕ LIVE TRAFFIC LAYER (ΚΙΝΗΣΗ ΣΤΟΥΣ ΔΡΟΜΟΥΣ)
     st.subheader("🗺️ Ζωντανός Χάρτης Κίνησης (Google Maps Traffic)")
-    # Το embedding URL περιλαμβάνει την παράμετρο layer=t για την αυτόματη εμφάνιση της κίνησης
+    
+    # 100% Ασφαλής σύνδεσμος Google Maps που εμφανίζει την κίνηση (layer=traffic)
     google_maps_html = """
     <iframe 
         width="100%" 
