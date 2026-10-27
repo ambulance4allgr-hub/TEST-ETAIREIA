@@ -44,7 +44,6 @@ def save_data():
 saved_data = load_data()
 
 # --- ΑΡΧΙΚΟΠΟΙΗΣΗ SESSION STATE ---
-# Σωστή ανάγνωση των θέσεων [0, 1, 2, 3, 4, 5] από τη λίστα για αποφυγή κρασαρίσματος
 if "name_1" not in st.session_state: st.session_state["name_1"] = saved_data["names"][0]
 if "name_2" not in st.session_state: st.session_state["name_2"] = saved_data["names"][1]
 if "name_3" not in st.session_state: st.session_state["name_3"] = saved_data["names"][2]
@@ -69,7 +68,12 @@ if "trips" not in st.session_state:
 
 # --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ & ΔΙΑΧΕΙΡΙΣΗ ΟΝΟΜΑΤΩΝ ---
 st.sidebar.markdown("### 🚑 Ambulance4all")
-menu = st.sidebar.radio("Μεταβείτε στην ενότητα:", ["🏠 Εταιρικό Προφίλ", "⏱️ Live Παρακολούθηση Στόλου", "📋 Προγραμματισμός Διακομιδών"])
+menu = st.sidebar.radio("Μεταβείτε στην ενότητα:", [
+    "🏠 Εταιρικό Προφίλ", 
+    "⏱️ Live Παρακολούθηση Στόλου", 
+    "📝 Προσθήκη Διαδρομών",
+    "📅 Ημερήσιο Πρόγραμμα (Ημερολόγιο)"
+])
 
 st.sidebar.write("---")
 st.sidebar.markdown("### ⚙️ Ονοματοδοσία Στόλου")
@@ -166,24 +170,9 @@ if menu == "🏠 Εταιρικό Προφίλ":
 
 # --- 2. LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ ΣΤΟΛΟΥ ---
 elif menu == "⏱️ Live Παρακολούθηση Στόλου":
-    st.title("⏱️ Ζωντανός Έλεγχος Στόλου & Κίνησης")
-    st.subheader("🗺️ Ζωντανός Χάρτης Κίνησης (Google Maps Traffic)")
-    
-    # 100% Ασφαλής σύνδεσμος Google Maps που εμφανίζει την κίνηση (layer=traffic)
-    google_maps_html = """
-    <iframe 
-        width="100%" 
-        height="450" 
-        style="border:0; border-radius:10px;" 
-        loading="lazy" 
-        allowfullscreen 
-        src="https://google.com">
-    </iframe>
-    """
-    st.components.v1.html(google_maps_html, height=460)
-    
+    st.title("⏱️ Ζωντανός Έλεγχος & Αντίστροφη Μέτρηση")
+    st.subheader("Παρακολούθηση ενεργών δρομολογίων σε πραγματικό χρόνο")
     st.write("---")
-    st.subheader("🚑 Κατάσταση & Χρονόμετρα Οχημάτων")
 
     @st.fragment(run_every=1.0)
     def live_timers_core():
@@ -218,3 +207,17 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
                     a["dest"] = st.text_input("Προς", value=a["dest"], key=f"dest_{i}", placeholder="Νοσοκομείο")
                     a["total_mins"] = st.number_input("Λεπτά", min_value=1, max_value=240, value=int(a["total_mins"]), key=f"mins_{i}")
                     st.button("▶️ Έναρξη Κίνησης", key=f"start_{i}", type="primary", on_click=start_amb, args=(i,), use_container_width=True)
+                st.write("---")
+
+    live_timers_core()
+
+# --- 3. ΠΟΣΘΗΚΗ ΔΙΑΔΡΟΜΩΝ ---
+elif menu == "📝 Προσθήκη Διαδρομών":
+    st.title("📝 Καταχώρηση Νέας Διακομιδής")
+    st.subheader("Συμπληρώστε τα στοιχεία της διαδρομής για να προγραμματιστεί στο ημερολόγιο")
+    st.write("---")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        st.text_input("Όνομα Ασθενούς", key="f_patient", placeholder="π.χ. Γεώργιος Παπαδόπουλος")
+        st.date_input("Ημερομηνία", key="f_date")
