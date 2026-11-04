@@ -22,6 +22,20 @@ def load_data():
         "trips": []
     }
 
+def load_data():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return {
+        "names": ["Τ12", "Τ16", "Τ16Β", "Τ16Δ", "Κενό 5", "Κενό 6"],
+        "trips": [],
+        "dynamic_inc": {},
+        "dynamic_exp": {}
+    }
+
 def save_data():
     names_to_save = [
         st.session_state.get("name_1", "Τ12"),
@@ -33,7 +47,9 @@ def save_data():
     ]
     data = {
         "names": names_to_save,
-        "trips": st.session_state.trips_list
+        "trips": st.session_state.trips_list,
+        "dynamic_inc": st.session_state.get("dynamic_inc", {}),
+        "dynamic_exp": st.session_state.get("dynamic_exp", {})
     }
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
@@ -57,6 +73,8 @@ if "amb" not in st.session_state:
 
 if "trips_list" not in st.session_state:
     st.session_state.trips_list = saved_data["trips"]
+    if "dynamic_inc" not in st.session_state: st.session_state.dynamic_inc = saved_data.get("dynamic_inc", {})
+if "dynamic_exp" not in st.session_state: st.session_state.dynamic_exp = saved_data.get("dynamic_exp", {})
 
 # --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ ---
 st.sidebar.markdown("### 🚑 Ambulance4all")
@@ -390,7 +408,7 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
                 # Κουμπί για προσθήκη νέας γραμμής εξόδου
                 if st.button("➕ Προσθήκη Γραμμής Εξόδου", key=f"btn_add_exp_{key_exp}", use_container_width=True):
                     st.session_state.dynamic_exp[key_exp].append({"label": "", "val": "0"})
-                    st.rerun()
+                    save_rerun()st.rerun()
                 
                 # ΤΕΛΙΚΟΙ ΥΠΟΛΟΓΙΣΜΟΙ
                 total_income = auto_income + tot_extra_inc
