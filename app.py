@@ -329,8 +329,11 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
     
     st.markdown(f"### 📊 Οικονομικός Έλεγχος Στόλου: **{selected_date.strftime('%d/%m/%Y')}**")
     
-    if "dynamic_inc" not in st.session_state: st.session_state.dynamic_inc = {}
-    if "dynamic_exp" not in st.session_state: st.session_state.dynamic_exp = {}
+    key_inc_main = f"inc_{selected_date}"
+    key_exp_main = f"exp_{selected_date}"
+    
+    if key_inc_main not in st.session_state.dynamic_inc: st.session_state.dynamic_inc[key_inc_main] = {}
+    if key_exp_main not in st.session_state.dynamic_exp: st.session_state.dynamic_exp[key_exp_main] = {}
         
     cols = st.columns(3)
     
@@ -338,69 +341,70 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
         current_col = cols[(i-1) % 3]
         amb_name = current_names[i-1]
         
-        key_inc = f"{selected_date}_{amb_name}"
-        key_exp = f"{selected_date}_{amb_name}"
-        
-        if key_inc not in st.session_state.dynamic_inc: st.session_state.dynamic_inc[key_inc] = [{"label": "Έκτακτο 1", "val": "0"}]
-        if key_exp not in st.session_state.dynamic_exp: st.session_state.dynamic_exp[key_exp] = [{"label": "Πετρέλαιο", "val": "0"}]
+        if amb_name not in st.session_state.dynamic_inc[key_inc_main]:
+            st.session_state.dynamic_inc[key_inc_main][amb_name] = [{"label": "Έκτακτο 1", "val": "0"}]
+        if amb_name not in st.session_state.dynamic_exp[key_exp_main]:
+            st.session_state.dynamic_exp[key_exp_main][amb_name] = [{"label": "Πετρέλαιο", "val": "0"}]
             
         amb_trips = [
             t for t in st.session_state.trips_list 
             if t['amb'] == amb_name and t['date'] == str(selected_date)
         ]
-        auto_income = 0.0
-        for trip in amb_trips:
-            try: auto_income += float(trip.get('cost', 0) or 0)
-            except ValueError: pass
+        auto_income = sum(float(t.get('cost', 0) or 0) for t in st.session_state.trips_list if t['amb'] == amb_name and t['date'] == str(selected_date))
                 
         with current_col:
             with st.container(border=True):
-                st.markdown(f"### 🔑 {amb_name}")
+                st.markdown(f"### 🚑 {amb_name}")
                 st.markdown(f"**📈 Έσοδα Προγράμματος:** {auto_income:,.2f} € *(από {len(amb_trips)} διακ.)*")
                 st.write("---")
                 
                 st.markdown("**💶 Επιλέον Έκτακτα Έσοδα**")
                 tot_extra_inc = 0.0
                 
-                for idx, item in enumerate(st.session_state.dynamic_inc[key_inc]):
+                for idx, item in enumerate(st.session_state.dynamic_inc[key_inc_main][amb_name]):
                     c_lbl, c_val = st.columns(2)
                     with c_lbl:
-                        item["label"] = st.text_input(f"Αιτιολογία", value=item["label"], key=f"lbl_inc_{key_inc}_{idx}", label_visibility="collapsed", placeholder="Όνομα Ασθενούς")
+                        item["label"] = st.text_input(f"Αιτιολογία", value=item["label"], key=f"lbl_inc_{key_inc_main}_{amb_name}_{idx}", label_visibility="collapsed", placeholder="Όνομα Ασθενούς")
                     with c_val:
-                        item["val"] = st.text_input(f"Ποσό", value=item["val"], key=f"val_inc_{key_inc}_{idx}", label_visibility="collapsed", placeholder="Ποσό")
+                        item["val"] = st.text_input(f"Ποσό", value=item["val"], key=f"val_inc_{key_inc_main}_{amb_name}_{idx}", label_visibility="collapsed", placeholder="Ποσό")
                     
                     v_clean = str(item["val"]).replace("€", "").replace(",", ".").strip()
                     try: tot_extra_inc += float(v_clean) if v_clean else 0.0
                     except ValueError: pass
                 
-                if st.button("➕ Προσθήκη Γραμμής Εσόδου", key=f"btn_add_inc_{key_inc}", use_container_width=True):
-                    st.session_state.dynamic_inc[key_inc].append({"label": "", "val": "0"})
+                if st.button("➕ Προσθήκη Γραμμής Εσόδου", key=f"btn_add_inc_{key_inc_main}_{amb_name}", use_container_width=True):
+                    st.session_state.dynamic_inc[key_inc_main][amb_name].append({"label": "", "val": "0"})
+                    save_data()
                     st.rerun()
                 
                 st.write("---")
                 st.markdown("**⛽ Έξοδα Βάρδιας**")
                 tot_exp = 0.0
                 
-                for idx, item in enumerate(st.session_state.dynamic_exp[key_exp]):
+                for idx, item in enumerate(st.session_state.dynamic_exp[key_exp_main][amb_name]):
                     c_lbl, c_val = st.columns(2)
                     with c_lbl:
-                        item["label"] = st.text_input(f"Έξοδο", value=item["label"], key=f"lbl_exp_{key_exp}_{idx}", label_visibility="collapsed", placeholder="π.χ. Οξυγόνο")
+                        item["label"] = st.text_input(f"Έξοδο", value=item["label"], key=f"lbl_exp_{key_exp_main}_{amb_name}_{idx}", label_visibility="collapsed", placeholder="π.χ. Οξυγόνο")
                     with c_val:
-                        item["val"] = st.text_input(f"Ποσό", value=item["val"], key=f"val_exp_{key_exp}_{idx}", label_visibility="collapsed", placeholder="Ποσό")
+                        item["val"] = st.text_input(f"Ποσό", value=item["val"], key=f"val_exp_{key_exp_main}_{amb_name}_{idx}", label_visibility="collapsed", placeholder="Ποσό")
                     
                     v_clean = str(item["val"]).replace("€", "").replace(",", ".").strip()
                     try: tot_exp += float(v_clean) if v_clean else 0.0
                     except ValueError: pass
                 
-                if st.button("➕ Προσθήκη Γραμμής Εξόδου", key=f"btn_add_exp_{key_exp}", use_container_width=True):
-                    st.session_state.dynamic_exp[key_exp].append({"label": "", "val": "0"})
+                if st.button("➕ Προσθήκη Γραμμής Εξόδου", key=f"btn_add_exp_{key_exp_main}_{amb_name}", use_container_width=True):
+                    st.session_state.dynamic_exp[key_exp_main][amb_name].append({"label": "", "val": "0"})
+                    save_data()
                     st.rerun()
+                
+                # Εξασφάλιση μόνιμης αποθήκευσης σε κάθε κύκλο της εφαρμογής
+                save_data()
                 
                 total_income = auto_income + tot_extra_inc
                 total_net = total_income - tot_exp
                 
                 st.write("---")
-                st.markdown(f"**Έσοδα:** {total_income:,.2f} € | **Έξοδα:** {tot_exp:,.2f} €")
+                st.markdown(f"**Συνολικά Έσοδα:** {total_income:,.2f} € | **Συνολικά Έξοδα:** {tot_exp:,.2f} €")
                 st.markdown(f"🏁 **Καθαρή Παράδοση:** <span style='font-size: 24px; font-weight: bold; color: #CD1818;'>{total_net:,.2f} €</span>", unsafe_allow_html=True)
             st.write("##")
 
@@ -413,3 +417,4 @@ elif menu == "👥 Διαθέσιμοι Διασώστες":
 elif menu == "🤝 Συνεργάτες":
     st.title("🤝 Συνεργάτες Εταιρείας")
     st.info("Αυτή η ενότητα θα υλοποιηθεί στα επόμενα βήματα.")
+
