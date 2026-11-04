@@ -69,7 +69,6 @@ if "dynamic_inc" not in st.session_state:
     st.session_state.dynamic_inc = saved_data.get("dynamic_inc", {})
 if "dynamic_exp" not in st.session_state: 
     st.session_state.dynamic_exp = saved_data.get("dynamic_exp", {})
-
 if "trips_list" not in st.session_state:
     st.session_state.trips_list = saved_data["trips"]
     if "dynamic_inc" not in st.session_state: st.session_state.dynamic_inc = saved_data.get("dynamic_inc", {})
