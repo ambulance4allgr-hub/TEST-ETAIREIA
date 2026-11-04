@@ -96,3 +96,77 @@ if menu == "🏠 Εταιρικό Προφίλ":
     * **👨‍⚕️ Εξειδικευμένα Πληρώματα:** Στελεχωνόμαστε αποκλειστικά από πιστοποιημένους διασώστες, έμπειρους οδηγούς και εξειδικευμένο ιατρικό προσωπικό για τη βέλτιστη διαχείριση κάθε περιστατικού.
     * **🌐 Ψηφιακός Έλεγχος:** Επενδύουμε σε σύγχρονα συστήματα ζωντανής παρακολούθησης και διαχείρισης στόλου για τον απόλυτο συντονισμό των δρομολογίων.
     """)
+    # --- 2. LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ ΣΤΟΛΟΥ ---
+elif menu == "⏱️ Live Παρακολούθηση Στόλου":
+    st.title("⏱️ Ζωντανός Έλεγχος & Αντίστροφη Μέτρηση")
+    st.subheader("Παρακολούθηση ενεργών δρομολογίων σε πραγματικό χρόνο")
+    st.write("---")
+
+    # Εδώ μεταφέρθηκε η Ονοματοδοσία για να μην πιάνει χώρο στο Sidebar
+    with st.expander("⚙️ Διαχείριση & Ονοματοδοσία Ασθενοφόρων"):
+        st.info("Εδώ μπορείτε να μετονομάσετε τα οχήματα (π.χ. τα Κενά 5 και 6 όταν ενταχθούν νέα ασθενοφόρα).")
+        c_name1, c_name2 = st.columns(2)
+        with c_name1:
+            st.text_input("Όχημα 1", key="name_1", on_change=save_data)
+            st.text_input("Όχημα 2", key="name_2", on_change=save_data)
+            st.text_input("Όχημα 3", key="name_3", on_change=save_data)
+        with c_name2:
+            st.text_input("Όχημα 4", key="name_4", on_change=save_data)
+            st.text_input("Όχημα 5", key="name_5", on_change=save_data)
+            st.text_input("Όχημα 6", key="name_6", on_change=save_data)
+
+    # JavaScript/HTML Κουδουνάκι για τον ήχο λήξης
+    def play_alert_sound():
+        sound_html = """
+        <audio autoplay hidden>
+            <source src="https://google.com" type="audio/ogg">
+            <source src="https://googleusercontent.com" type="audio/mpeg">
+        </audio>
+        """
+        st.components.v1.html(sound_html, height=0, width=0)
+
+    @st.fragment(run_every=1.0)
+    def live_timers_core():
+        cols = st.columns(3)
+        for i in range(1, 7):
+            current_col = cols[(i-1) % 3]
+            a = st.session_state.amb[i]
+            name = current_names[i-1]
+            
+            with current_col:
+                st.markdown(f"### 🚑 {name}")
+                if a["active"]:
+                    if a["crew"]: st.markdown(f"**👥 Πλήρωμα:** {a['crew']}")
+                    st.markdown(f"📍 **Διαδρομή:** {a['origin']} ➔ {a['dest']}")
+                    
+                    if a["target"] is not None:
+                        remaining = max(0, int((a["target"] - datetime.now()).total_seconds()))
+                        total_secs = a["total_mins"] * 60
+                        prog = 1 - (remaining / total_secs) if total_secs > 0 else 0
+                        st.progress(min(max(prog, 0.0), 1.0))
+                        
+                        if remaining > 0:
+                            m, s = divmod(remaining, 60)
+                            st.markdown(f"<div style='font-size: 38px; font-weight: bold; color: #CD1818; font-family: monospace; background-color: #F8F9FA; padding: 5px 15px; border-radius: 5px; display: inline-block;'>⏳ {m:02d}:{s:02d}</div>", unsafe_allow_html=True)
+                        else:
+                            st.success("✅ Το όχημα έφτασε!")
+                            if not a["sound_played"]:
+                                play_alert_sound()
+                                a["sound_played"] = True
+                            
+                    st.button("⏹️ Τερματισμός / Καθαρισμός", key=f"stop_{i}", on_click=lambda idx=i: [st.session_state.amb[idx].update({"active": False, "target": None, "origin": "", "dest": "", "sound_played": False})], use_container_width=True)
+                else:
+                    a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="π.χ. Κώστας / Γιάννης")
+                    a["origin"] = st.text_input("Από", value=a["origin"], key=f"orig_{i}", placeholder="Σημείο Παραλαβής")
+                    a["dest"] = st.text_input("Προς", value=a["dest"], key=f"dest_{i}", placeholder="Νοσοκομείο")
+                    a["total_mins"] = st.number_input("Λεπτά Διαδρομής", min_value=1, max_value=240, value=int(a["total_mins"]), key=f"mins_{i}")
+                    
+                    def start_vehicle(idx=i):
+                        st.session_state.amb[idx]["active"] = True
+                        st.session_state.amb[idx]["target"] = datetime.now() + timedelta(minutes=st.session_state.amb[idx]["total_mins"])
+                        st.session_state.amb[idx]["sound_played"] = False
+
+                    st.button("▶️ Έναρξη Κίνησης", key=f"start_{i}", type="primary", on_click=start_vehicle, use_container_width=True)
+                st.write("---")
+
+    live_timers_core()
