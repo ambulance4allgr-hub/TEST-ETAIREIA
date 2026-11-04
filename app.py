@@ -102,7 +102,6 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     st.subheader("Παρακολούθηση ενεργών δρομολογίων σε πραγματικό χρόνο")
     st.write("---")
 
-    # Εδώ μεταφέρθηκε η Ονοματοδοσία για να μην πιάνει χώρο στο Sidebar
     with st.expander("⚙️ Διαχείριση & Ονοματοδοσία Ασθενοφόρων"):
         st.info("Εδώ μπορείτε να μετονομάσετε τα οχήματα (π.χ. τα Κενά 5 και 6 όταν ενταχθούν νέα ασθενοφόρα).")
         c_name1, c_name2 = st.columns(2)
@@ -115,15 +114,27 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
             st.text_input("Όχημα 5", key="name_5", on_change=save_data)
             st.text_input("Όχημα 6", key="name_6", on_change=save_data)
 
-    # JavaScript/HTML Κουδουνάκι για τον ήχο λήξης
+    # 100% Ασφαλής ψηφιακός ήχος (Standard Browser Beep) που δεν μπλοκάρεται
     def play_alert_sound():
-        sound_html = """
-        <audio autoplay hidden>
-            <source src="https://google.com" type="audio/ogg">
-            <source src="https://googleusercontent.com" type="audio/mpeg">
-        </audio>
+        sound_code = """
+        <script>
+        try {
+            var context = new (window.AudioContext || window.webkitAudioContext)();
+            var osc = context.createOscillator();
+            var gain = context.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, context.currentTime); // Ψηλή συχνότητα για καθαρό Beep
+            gain.gain.setValueAtTime(0.6, context.currentTime);
+            osc.connect(gain);
+            gain.connect(context.destination);
+            osc.start();
+            setTimeout(function() { osc.stop(); }, 400); // Διάρκεια ήχου 0.4 δευτερόλεπτα
+        } catch(e) {
+            console.log("Audio error:", e);
+        }
+        </script>
         """
-        st.components.v1.html(sound_html, height=0, width=0)
+        st.components.v1.html(sound_code, height=0, width=0)
 
     @st.fragment(run_every=1.0)
     def live_timers_core():
