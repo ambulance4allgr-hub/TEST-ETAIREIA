@@ -375,10 +375,10 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
                     try: tot_extra_inc += float(v_clean) if v_clean else 0.0
                     except ValueError: pass
                 
-                if st.button("➕ Προσθήκη Γραμμής Εσόδου", key=f"btn_add_inc_{key_inc}", use_container_width=True):
-                    st.session_state.dynamic_inc[key_inc].append({"label": "", "val": "0"})
-                    st.rerun()
-                
+               if st.button("➕ Προσθήκη Γραμμής Εξόδου", key=f"btn_add_exp_{key_exp}", use_container_width=True):
+    st.session_state.dynamic_exp[key_exp].append({"label": "", "val": "0"})
+    st.rerun()
+    
                 st.write("---")
                 st.markdown("**⛽ Έξοδα Βάρδιας**")
                 tot_exp = 0.0
