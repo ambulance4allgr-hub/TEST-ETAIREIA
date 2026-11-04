@@ -244,4 +244,57 @@ elif menu == "📝 Προσθήκη Διαδρομών":
                 st.rerun()
             else:
                 st.error("❌ Σφάλμα: Τα πεδία Ονοματεπώνυμο, Από και Προς είναι υποχρεωτικά.")
-
+# --- 4. ΗΜΕΡΗΣΙΟ ΠΡΟΓΡΑΜΜΑ (ΗΜΕΡΟΛΟΓΙΟ) ---
+elif menu == "📅 Ημερήσιο Πρόγραμμα (Ημερολόγιο)":
+    st.title("📅 Ημερήσιο Πρόγραμμα Διακομιδών")
+    st.subheader("Επιλέξτε ημερομηνία για να δείτε το αναλυτικό πλάνο των οχημάτων")
+    
+    # Μπάρα ημερολογίου στο πάνω μέρος της σελίδας
+    selected_date = st.date_input("📆 Επιλογή Ημερομηνίας Προβολής:", datetime.now().date())
+    st.write("---")
+    
+    st.markdown(f"### 📋 Πλάνο Διαδρομών για την ημέρα: **{selected_date.strftime('%d/%m/%Y')}**")
+    
+    # Δημιουργία των 6 Tabs με τα ονόματα των ασθενοφόρων σας
+    tabs = st.tabs([f"🚑 {name}" for name in current_names])
+    
+    for index, amb_name in enumerate(current_names):
+        with tabs[index]:
+            # Φιλτράρισμα: Κρατάμε τις διαδρομές του συγκεκριμένου οχήματος για την επιλεγμένη ημέρα
+            amb_trips = [
+                t for t in st.session_state.trips_list 
+                if t['amb'] == amb_name and t['date'] == str(selected_date)
+            ]
+            
+            # Ταξινόμηση των διακομιδών βάσει της ώρας έναρξης
+            amb_trips = sorted(amb_trips, key=lambda x: str(x['time']))
+            
+            if not amb_trips:
+                st.info(f"Δεν υπάρχουν προγραμματισμένες διακομιδές για το όχημα {amb_name} στις {selected_date.strftime('%d/%m/%Y')}.")
+            else:
+                for trip in amb_trips:
+                    # Καθαρό, οργανωμένο κουτί (Container) για κάθε ασθενή με όλα τα νέα πεδία
+                    with st.container(border=True):
+                        c_header1, c_header2 = st.columns(2)
+                        with c_header1:
+                            st.markdown(f"👤 **Ασθενής:** <span style='font-size:19px; font-weight:bold; color:#CD1818;'>{trip['patient']}</span>", unsafe_allow_html=True)
+                        with c_header2:
+                            if trip.get('cost'):
+                                st.markdown(f"<h4 style='text-align:right; color:#2E7D32; margin:0;'>💶 {trip['cost']} €</h4>", unsafe_allow_html=True)
+                        
+                        # Πίνακας με τα ιατρικά και επιχειρησιακά στοιχεία
+                        col_info1, col_info2 = st.columns(2)
+                        with col_info1:
+                            st.markdown(f"🕒 **Ώρα:** {trip['time']} έως {trip['end']}")
+                            st.markdown(f"📍 **Διαδρομή:** **{trip['from']}** ➔ **{trip['to']}**")
+                            st.markdown(f"🩺 **Λόγος:** {trip.get('reason', '-')}")
+                            if trip.get('home_info'):
+                                st.markdown(f"🏠 **Οικία:** {trip['home_info']}")
+                        with col_info2:
+                            st.markdown(f"🎂 **Ηλικία:** {trip.get('age', '-')} ετών | ⚖️ **Βάρος:** {trip.get('weight', '-')} kg")
+                            st.markdown(f"🪑 **Τρόπος Παραλαβής:** {trip.get('pickup_mode', '-')}")
+                            if trip.get('notes'):
+                                st.markdown(f"💬 **Σχόλια:** *{trip['notes']}*")
+                        
+                        st.write("#")
+                        st.button("🗑️ Διαγραφή Διαδρομής", key=f"del_{trip['id']}", on_click=delete_trip, args=(trip['id'],), type="secondary")
