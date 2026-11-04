@@ -14,19 +14,10 @@ def load_data():
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            pass
-    return {
-        "names": ["Τ12", "Τ16", "Τ16Β", "Τ16Δ", "Κενό 5", "Κενό 6"],
-        "trips": []
-    }
-
-def load_data():
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if "dynamic_inc" not in data: data["dynamic_inc"] = {}
+                if "dynamic_exp" not in data: data["dynamic_exp"] = {}
+                return data
         except:
             pass
     return {
@@ -70,6 +61,14 @@ if "amb" not in st.session_state:
         st.session_state.amb[i] = {
             "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 20, "active": False, "sound_played": False
         }
+
+if "trips_list" not in st.session_state:
+    st.session_state.trips_list = saved_data.get("trips", [])
+
+if "dynamic_inc" not in st.session_state: 
+    st.session_state.dynamic_inc = saved_data.get("dynamic_inc", {})
+if "dynamic_exp" not in st.session_state: 
+    st.session_state.dynamic_exp = saved_data.get("dynamic_exp", {})
 
 if "trips_list" not in st.session_state:
     st.session_state.trips_list = saved_data["trips"]
