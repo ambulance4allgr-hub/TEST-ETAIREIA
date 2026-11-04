@@ -7,8 +7,19 @@ import os
 
 st.set_page_config(page_title="Ambulance4all | Κέντρο Επιχειρήσεων", layout="wide")
 
+# --- ΣΥΝΑΡΤΗΣΗ ΓΙΑ ΗΧΗΤΙΚΟ ΣΗΜΑ (ALERT) ---
+def play_alert_sound():
+    """Παίζει έναν σύντομο ήχο ειδοποίησης μέσω HTML/JavaScript στον browser"""
+    audio_html = """
+    <audio autoplay>
+        <source src="https://google.com" type="audio/ogg">
+        <source src="https://googleusercontent.com" type="audio/mpeg">
+    </audio>
+    """
+    st.components.v1.html(audio_html, height=0, width=0)
+
 # --- ΑΡΧΕΙΑ ΜΟΝΙΜΗΣ ΑΠΟΘΗΚΕΥΣΗΣ ---
-DATA_FILE = "ambulance_data.json"
+DATA_FILE = "ambulance_storage.json"
 
 def load_data():
     """Φορτώνει τα δεδομένα από το αρχείο αν υπάρχει, αλλιώς επιστρέφει αρχικές τιμές"""
@@ -35,7 +46,7 @@ def save_data():
     ]
     data = {
         "names": names_to_save,
-        "trips": st.session_state.trips
+        "trips": st.session_state.trips_list
     }
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
@@ -60,11 +71,12 @@ if "amb" not in st.session_state:
             "dest": "", 
             "target": None, 
             "total_mins": 20, 
-            "active": False
+            "active": False,
+            "sound_played": False
         }
 
-if "trips" not in st.session_state:
-    st.session_state.trips = saved_data["trips"]
+if "trips_list" not in st.session_state:
+    st.session_state.trips_list = saved_data["trips"]
 
 # --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ & ΔΙΑΧΕΙΡΙΣΗ ΟΝΟΜΑΤΩΝ ---
 st.sidebar.markdown("### 🚑 Ambulance4all")
@@ -108,47 +120,22 @@ for idx, name in enumerate(raw_names, 1):
         seen.add(name)
 
 # --- ΣΥΝΑΡΤΗΣΕΙΣ LOGIC ---
-def add_trip():
-    p = st.session_state.get("f_patient", "").strip()
-    f_loc = st.session_state.get("f_from", "").strip()
-    t_loc = st.session_state.get("f_to", "").strip()
-    
-    if p and f_loc and t_loc:
-        new_trip = {
-            "id": str(uuid.uuid4()), 
-            "date": str(st.session_state.get("f_date")), 
-            "time": st.session_state.get("f_time", ""), 
-            "end": st.session_state.get("f_end", ""), 
-            "patient": p, 
-            "from": f_loc, 
-            "to": t_loc, 
-            "amb": st.session_state.get("f_amb")
-        }
-        st.session_state.trips.append(new_trip)
-        save_data()
-        st.session_state.trip_success = True
-        st.session_state["f_patient"] = ""
-        st.session_state["f_from"] = ""
-        st.session_state["f_to"] = ""
-        st.session_state["f_time"] = ""
-        st.session_state["f_end"] = ""
-    else:
-        st.session_state.trip_success = False
-
 def start_amb(i):
     a = st.session_state.amb[i]
     if a["origin"] and a["dest"]:
         a["active"] = True
         a["target"] = datetime.now() + timedelta(minutes=a["total_mins"])
+        a["sound_played"] = False
 
 def stop_amb(i):
     st.session_state.amb[i]["active"] = False
     st.session_state.amb[i]["target"] = None
     st.session_state.amb[i]["origin"] = ""
     st.session_state.amb[i]["dest"] = ""
+    st.session_state.amb[i]["sound_played"] = False
 
 def delete_trip(trip_id):
-    st.session_state.trips = [t for t in st.session_state.trips if t["id"] != trip_id]
+    st.session_state.trips_list = [t for t in st.session_state.trips_list if t["id"] != trip_id]
     save_data()
 
 # --- 1. ΕΤΑΙΡΙΚΟ ΠΡΟΦΙΛ ---
@@ -199,25 +186,29 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
                             st.markdown(f"<div style='font-size: 38px; font-weight: bold; color: #CD1818; font-family: monospace; background-color: #F8F9FA; padding: 5px 15px; border-radius: 5px; display: inline-block;'>⏳ {m:02d}:{s:02d}</div>", unsafe_allow_html=True)
                         else:
                             st.success("✅ Το όχημα έφτασε!")
+                            # Ενεργοποίηση ήχου μία φορά μόλις φτάσει στο 0
+                            if not a["sound_played"]:
+                                play_alert_sound()
+                                a["sound_played"] = True
                             
-                    st.button("⏹️ Τερματισμός", key=f"stop_{i}", on_click=stop_amb, args=(i,), use_container_width=True)
+                    st.button("⏹️ Τερματισμός / Καθαρισμός", key=f"stop_{i}", on_click=stop_amb, args=(i,), use_container_width=True)
                 else:
                     a["crew"] = st.text_input("Πλήρωμα", value=a["crew"], key=f"crew_{i}", placeholder="π.χ. Κώστας / Γιάννης")
                     a["origin"] = st.text_input("Από", value=a["origin"], key=f"orig_{i}", placeholder="Σημείο Παραλαβής")
                     a["dest"] = st.text_input("Προς", value=a["dest"], key=f"dest_{i}", placeholder="Νοσοκομείο")
-                    a["total_mins"] = st.number_input("Λεπτά", min_value=1, max_value=240, value=int(a["total_mins"]), key=f"mins_{i}")
+                    a["total_mins"] = st.number_input("Λεπτά Διαδρομής", min_value=1, max_value=240, value=int(a["total_mins"]), key=f"mins_{i}")
                     st.button("▶️ Έναρξη Κίνησης", key=f"start_{i}", type="primary", on_click=start_amb, args=(i,), use_container_width=True)
                 st.write("---")
 
     live_timers_core()
 
-# --- 3. ΠΟΣΘΗΚΗ ΔΙΑΔΡΟΜΩΝ ---
+# --- 3. ΠΡΟΣΘΗΚΗ ΔΙΑΔΡΟΜΩΝ ---
 elif menu == "📝 Προσθήκη Διαδρομών":
     st.title("📝 Καταχώρηση Νέας Διακομιδής")
-    st.subheader("Συμπληρώστε τα στοιχεία της διαδρομής για να προγραμματιστεί στο ημερολόγιο")
+    st.subheader("Συμπληρώστε όλα τα στοιχεία για να καταγραφεί η διαδρομή στο ημερολόγιο")
     st.write("---")
     
-    c1, c2 = st.columns(2)
-    with c1:
-        st.text_input("Όνομα Ασθενούς", key="f_patient", placeholder="π.χ. Γεώργιος Παπαδόπουλος")
-        st.date_input("Ημερομηνία", key="f_date")
+    with st.form("new_trip_form", clear_on_submit=True):
+        c1, c2 = st.columns(2)
+        with c1:
+            patient = st.text_input("👤 Ονοματεπώνυμο Ασθεννούς", placeholder="π.χ. Γεώργιος Παπαδόπουλος")
