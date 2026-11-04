@@ -58,12 +58,12 @@ if "amb" not in st.session_state:
 if "trips_list" not in st.session_state:
     st.session_state.trips_list = saved_data["trips"]
 
-# --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ (Η ΟΝΟΜΑΤΟΣΙΑ ΑΦΑΙΡΕΘΗΚΕ) ---
+# --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ ---
 st.sidebar.markdown("### 🚑 Ambulance4all")
 menu = st.sidebar.radio("Μεταβείτε στην ενότητα:", [
     "🏠 Εταιρικό Προφίλ", 
     "⏱️ Live Παρακολούθηση Στόλου", 
-    "📝 Προσθήκη Διακομιδών",
+    "📝 Προσθήκη Διαδρομών",
     "📅 Ημερήσιο Πρόγραμμα (Ημερολόγιο)"
 ])
 
@@ -88,7 +88,7 @@ if menu == "🏠 Εταιρικό Προφίλ":
     st.write("---")
     st.markdown("""
     ### 🎯 Η Αποστολή μας
-    Με απόλυτο σεβασμό στην ανθρώπινη ζωή, η **Ambulance4all** αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επείγουσων και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
+    Με απόλυτο σεβασμό στην ανθρώμινη ζωή, η **Ambulance4all** αποτελεί το πρότυπο κέντρο διαχείρισης και εκτέλεσης επειγουσών και προγραμματισμένων ιατρικών διακομιδών. Συνδυάζοντας την τεχνολογική υπεροχή με την επιχειρησιακή ετοιμότητα, προσφέρουμε ολοκληρωμένες υπηρεσίες υγείας, αποτελώντας τον πλέον αξιόπιστο συνεργάτη για νοσηλευτικά ιδρύματα, ασφαλιστικούς φορείς και ιδιώτες.
 
     ### 🛡️ Πυλώνες της Υπεροχής μας
     * **⚡ Άμεση Ανταπόκριση 24/7:** Λειτουργούμε σε κατάσταση πλήρους επιχειρησιακής ετοιμότητας 365 ημέρες τον χρόνο, εξασφαλίζοντας ελάχιστους χρόνους αναμονής.
@@ -96,7 +96,8 @@ if menu == "🏠 Εταιρικό Προφίλ":
     * **👨‍⚕️ Εξειδικευμένα Πληρώματα:** Στελεχωνόμαστε αποκλειστικά από πιστοποιημένους διασώστες, έμπειρους οδηγούς και εξειδικευμένο ιατρικό προσωπικό για τη βέλτιστη διαχείριση κάθε περιστατικού.
     * **🌐 Ψηφιακός Έλεγχος:** Επενδύουμε σε σύγχρονα συστήματα ζωντανής παρακολούθησης και διαχείρισης στόλου για τον απόλυτο συντονισμό των δρομολογίων.
     """)
-    # --- 2. LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ ΣΤΟΛΟΥ ---
+
+# --- 2. LIVE ΠΑΡΑΚΟΛΟΥΘΗΣΗ ΣΤΟΛΟΥ ---
 elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     st.title("⏱️ Ζωντανός Έλεγχος & Αντίστροφη Μέτρηση")
     st.subheader("Παρακολούθηση ενεργών δρομολογίων σε πραγματικό χρόνο")
@@ -114,7 +115,6 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
             st.text_input("Όχημα 5", key="name_5", on_change=save_data)
             st.text_input("Όχημα 6", key="name_6", on_change=save_data)
 
-    # 100% Ασφαλής ψηφιακός ήχος (Standard Browser Beep) που δεν μπλοκάρεται
     def play_alert_sound():
         sound_code = """
         <script>
@@ -123,12 +123,12 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
             var osc = context.createOscillator();
             var gain = context.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, context.currentTime); // Ψηλή συχνότητα για καθαρό Beep
+            osc.frequency.setValueAtTime(880, context.currentTime);
             gain.gain.setValueAtTime(0.6, context.currentTime);
             osc.connect(gain);
             gain.connect(context.destination);
             osc.start();
-            setTimeout(function() { osc.stop(); }, 400); // Διάρκεια ήχου 0.4 δευτερόλεπτα
+            setTimeout(function() { osc.stop(); }, 400);
         } catch(e) {
             console.log("Audio error:", e);
         }
@@ -181,7 +181,8 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
                 st.write("---")
 
     live_timers_core()
-# --- 3. ΠΡΟΣΘΗΚΗ ΔΙΑΚΟΜΙΔΩΝ ---
+
+# --- 3. ΠΡΟΣΘΗΚΗ ΔΙΑΔΡΟΜΩΝ ---
 elif menu == "📝 Προσθήκη Διαδρομών":
     st.title("📝 Καταχώρηση Νέας Διακομιδής")
     st.subheader("Συμπληρώστε τα πλήρη στοιχεία για το ημερήσιο πρόγραμμα")
@@ -198,92 +199,3 @@ elif menu == "📝 Προσθήκη Διαδρομών":
                 time_start = st.text_input("🕒 Ώρα Έναρξης", placeholder="π.χ. 09:30")
             with c_time2:
                 time_end = st.text_input("🏁 Ώρα Λήξης / Άφιξης", placeholder="π.χ. 10:15")
-                
-            c_age, c_weight = st.columns(2)
-            with c_age:
-                age = st.text_input("🎂 Ηλικία Ασθενούς", placeholder="π.χ. 75")
-            with c_weight:
-                weight = st.text_input("⚖️ Βάρος (kg)", placeholder="π.χ. 80")
-                
-            reason = st.text_input("🩺 Λόγος Διακομιδής", placeholder="π.χ. Επανέλεγχος / Εξιτήριο")
-            cost = st.text_input("💶 Κόστος Διακομιδής (€)", placeholder="π.χ. 50")
-            
-        with c2:
-            loc_from = st.text_input("📍 Τοποθεσία Παραλαβής (Από)", placeholder="π.χ. Οικία / Κλινική Α")
-            loc_to = st.text_input("🏢 Τοποθεσία Προορισμού (Προς)", placeholder="π.χ. Νοσοκομείο Β")
-            home_info = st.text_input("🏠 Πληροφορίες Οικίας", placeholder="π.χ. 2ος όροφος, στενό ασανσέρ")
-            pickup_mode = st.selectbox("🪑 Τρόπος Παραλαβής", ["Φορείο", "Καρέκλα", "Περιπατητικός", "Άλλο"])
-            assigned_amb = st.selectbox("🚑 Επιλογή Ασθενοφόρου", current_names)
-            notes = st.text_area("💬 Σχόλια / Επιπλέον Πληροφορίες", placeholder="π.χ. Χρειάζεται οξυγόνο κατά τη διαδρομή")
-            
-        submit_btn = st.form_submit_button("💾 Αποθήκευση στο Πρόγραμμα", use_container_width=True)
-        
-        if submit_btn:
-            if patient.strip() and loc_from.strip() and loc_to.strip():
-                new_trip = {
-                    "id": str(uuid.uuid4()), 
-                    "date": str(trip_date),
-                    "time": time_start,
-                    "end": time_end,
-                    "patient": patient,
-                    "age": age,
-                    "weight": weight,
-                    "reason": reason,
-                    "from": loc_from,
-                    "to": loc_to,
-                    "home_info": home_info,
-                    "pickup_mode": pickup_mode,
-                    "cost": cost,
-                    "notes": notes,
-                    "amb": assigned_amb
-                }
-                st.session_state.trips_list.append(new_trip)
-                save_data()
-                st.success("✔️ Η διακομιδή καταχωρήθηκε μόνιμα με όλα τα στοιχεία!")
-                st.rerun()
-            else:
-                st.error("❌ Σφάλμα: Τα πεδία Ονοματεπώνυμο, Από και Προς είναι υποχρεωτικά.")
-  c_age, c_weight = st.columns(2)
-            with c_age:
-                age = st.text_input("🎂 Ηλικία Ασθενούς", placeholder="π.χ. 75")
-            with c_weight:
-                weight = st.text_input("⚖️ Βάρος (kg)", placeholder="π.χ. 80")
-                
-            reason = st.text_input("🩺 Λόγος Διακομιδής", placeholder="π.χ. Επανέλεγχος / Εξιτήριο")
-            cost = st.text_input("💶 Κόστος Διακομιδής (€)", placeholder="π.χ. 50")
-            
-        with c2:
-            loc_from = st.text_input("📍 Τοποθεσία Παραλαβής (Από)", placeholder="π.χ. Οικία / Κλινική Α")
-            loc_to = st.text_input("🏢 Τοποθεσία Προορισμού (Προς)", placeholder="π.χ. Νοσοκομείο Β")
-            home_info = st.text_input("🏠 Πληροφορίες Οικίας", placeholder="π.χ. 2ος όροφος, στενό ασανσέρ")
-            pickup_mode = st.selectbox("🪑 Τρόπος Παραλαβής", ["Φορείο", "Καρέκλα", "Περιπατητικός", "Άλλο"])
-            assigned_amb = st.selectbox("🚑 Επιλογή Ασθενοφόρου", current_names)
-            notes = st.text_area("💬 Σχόλια / Επιπλέον Πληροφορίες", placeholder="π.χ. Χρειάζεται οξυγόνο κατά τη διαδρομή")
-            
-        submit_btn = st.form_submit_button("💾 Αποθήκευση στο Πρόγραμμα", use_container_width=True)
-        
-        if submit_btn:
-            if patient.strip() and loc_from.strip() and loc_to.strip():
-                new_trip = {
-                    "id": str(uuid.uuid4()), 
-                    "date": str(trip_date),
-                    "time": time_start,
-                    "end": time_end,
-                    "patient": patient,
-                    "age": age,
-                    "weight": weight,
-                    "reason": reason,
-                    "from": loc_from,
-                    "to": loc_to,
-                    "home_info": home_info,
-                    "pickup_mode": pickup_mode,
-                    "cost": cost,
-                    "notes": notes,
-                    "amb": assigned_amb
-                }
-                st.session_state.trips_list.append(new_trip)
-                save_data()
-                st.success("✔️ Η διακομιδή καταχωρήθηκε μόνιμα με όλα τα στοιχεία!")
-                st.rerun()
-            else:
-                st.error("❌ Σφάλμα: Τα πεδία Ονοματεπώνυμο, Από και Προς είναι υποχρεωτικά.")
