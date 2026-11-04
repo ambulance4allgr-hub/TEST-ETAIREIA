@@ -199,11 +199,12 @@ elif menu == "📝 Προσθήκη Διαδρομών":
                 time_start = st.text_input("🕒 Ώρα Έναρξης", placeholder="π.χ. 09:30")
             with c_time2:
                 time_end = st.text_input("🏁 Ώρα Λήξης / Άφιξης", placeholder="π.χ. 10:15")
-c_age, c_weight = st.columns(2)
+                
+            c_age, c_weight = st.columns(2)
             with c_age:
                 age = st.text_input("🎂 Ηλικία Ασθενούς", placeholder="π.χ. 75")
             with c_weight:
-                weight = st.text_input("⚖️ Βάρος (kg)", placeholder="π.举. 80")
+                weight = st.text_input("⚖️ Βάρος (kg)", placeholder="π.χ. 80")
                 
             reason = st.text_input("🩺 Λόγος Διακομιδής", placeholder="π.χ. Επανέλεγχος / Εξιτήριο")
             cost = st.text_input("💶 Κόστος Διακομιδής (€)", placeholder="π.χ. 50")
