@@ -306,18 +306,16 @@ elif menu == "📅 Ημερήσιο Πρόγραμμα (Ημερολόγιο)":
 # --- 6. ΗΜΕΡΗΣΙΟ ΤΑΜΕΙΟ ΑΣΘΕΝΟΦΟΡΩΝ ---
 elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
     st.title("💰 Ημερήσιο Ταμείο Ασθενοφόρων")
-    st.subheader("Αναλυτικός έλεγχος εσόδων, εξόδων και καθαρής παράδοσης πληρωμάτων")
+    st.subheader("Αναλυτική καταγραφή εσόδων και εξόδων με δυναμικές γραμμές και αυτόματη άθροιση")
     
     selected_date = st.date_input("📆 Επιλογή Ημερομηνίας Ταμείου:", datetime.now().date(), key="t_date")
     st.write("---")
     
     st.markdown(f"### 📊 Οικονομικός Έλεγχος Στόλου: **{selected_date.strftime('%d/%m/%Y')}**")
     
-    # Αρχικοποίηση μνήμης για κείμενα και ποσά ανά ημέρα και όχημα
-    if "expenses_text" not in st.session_state: st.session_state.expenses_text = {}
-    if "expenses_num" not in st.session_state: st.session_state.expenses_num = {}
-    if "income_text" not in st.session_state: st.session_state.income_text = {}
-    if "income_num" not in st.session_state: st.session_state.income_num = {}
+    # Αρχικοποίηση λιστών στη μνήμη ανά ημέρα και όχημα αν δεν υπάρχουν
+    if "dynamic_inc" not in st.session_state: st.session_state.dynamic_inc = {}
+    if "dynamic_exp" not in st.session_state: st.session_state.dynamic_exp = {}
         
     cols = st.columns(3)
     
@@ -325,18 +323,14 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
         current_col = cols[(i-1) % 3]
         amb_name = current_names[i-1]
         
-        # Μοναδικά κλειδιά ανά ημέρα και όχημα
-        key_exp_txt = f"exp_txt_{selected_date}_{amb_name}"
-        key_exp_num = f"exp_num_{selected_date}_{amb_name}"
-        key_inc_txt = f"inc_txt_{selected_date}_{amb_name}"
-        key_inc_num = f"inc_num_{selected_date}_{amb_name}"
+        # Μοναδικά κλειδιά για κάθε όχημα και ημέρα
+        key_inc = f"{selected_date}_{amb_name}"
+        key_exp = f"{selected_date}_{amb_name}"
         
-        if key_exp_txt not in st.session_state.expenses_text: st.session_state.expenses_text[key_exp_txt] = ""
-        if key_exp_num not in st.session_state.expenses_num: st.session_state.expenses_num[key_exp_num] = 0.0
-        if key_inc_txt not in st.session_state.income_text: st.session_state.income_text[key_inc_txt] = ""
-        if key_inc_num not in st.session_state.income_num: st.session_state.income_num[key_inc_num] = 0.0
+        if key_inc not in st.session_state.dynamic_inc: st.session_state.dynamic_inc[key_inc] = [{"label": "Έκτακτο 1", "val": "0"}]
+        if key_exp not in st.session_state.dynamic_exp: st.session_state.dynamic_exp[key_exp] = [{"label": "Πετρέλαιο", "val": "0"}]
             
-        # Αυτόματος υπολογισμός εσόδων από το πρόγραμμα διακομιδών
+        # Αυτόματος υπολογισμός εσόδων από το πρόγραμμα
         amb_trips = [
             t for t in st.session_state.trips_list 
             if t['amb'] == amb_name and t['date'] == str(selected_date)
@@ -352,48 +346,58 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
                 st.markdown(f"**📈 Έσοδα Προγράμματος:** {auto_income:,.2f} € *(από {len(amb_trips)} διακ.)*")
                 st.write("---")
                 
-                # 1. ΑΝΑΛΥΤΙΚΑ ΕΚΤΑΚΤΑ ΕΣΟΔΑ
-                st.markdown("**💶 Ράμπα Επιπλέον Εσόδων**")
-                st.session_state.income_text[key_inc_txt] = st.text_input(
-                    "Ανάλυση Εσόδων (Ασθενείς / Αιτιολογία)", 
-                    value=st.session_state.income_text[key_inc_txt], 
-                    placeholder="π.χ. Σταθόπουλος 40, Νικηταράς 30",
-                    key=f"txt_inc_{key_inc_txt}"
-                )
+                # --- ΕΝΟΤΗΤΑ ΕΣΟΔΩΝ ---
+                st.markdown("**💶 Επιλέον Έκτακτα Έσοδα**")
+                tot_extra_inc = 0.0
                 
-                # Εδώ βάζεις το τελικό άθροισμα των έξτρα εσόδων
-                st.session_state.income_num[key_inc_num] = st.number_input(
-                    "Σύνολο Έκτακτων Εσόδων (€)", 
-                    min_value=0.0, 
-                    value=float(st.session_state.income_num[key_inc_num]), 
-                    key=f"num_inc_{key_inc_num}"
-                )
+                # Εμφάνιση όλων των γραμμών εσόδων που έχουν δημιουργηθεί
+                for idx, item in enumerate(st.session_state.dynamic_inc[key_inc]):
+                    c_lbl, c_val = st.columns([2, 1])
+                    with c_lbl:
+                        item["label"] = st.text_input(f"Αιτιολογία", value=item["label"], key=f"lbl_inc_{key_inc}_{idx}", label_visibility="collapsed", placeholder="Όνομα Ασθενούς")
+                    with c_val:
+                        item["val"] = st.text_input(f"Ποσό", value=item["val"], key=f"val_inc_{key_inc}_{idx}", label_visibility="collapsed", placeholder="Ποσό")
+                    
+                    # Καθαρισμός και άθροιση
+                    v_clean = str(item["val"]).replace("€", "").replace(",", ".").strip()
+                    try: tot_extra_inc += float(v_clean) if v_clean else 0.0
+                    except ValueError: pass
+                
+                # Κουμπί για προσθήκη νέας γραμμής εσόδου
+                if st.button("➕ Προσθήκη Γραμμής Εσόδου", key=f"btn_add_inc_{key_inc}", use_container_width=True):
+                    st.session_state.dynamic_inc[key_inc].append({"label": "", "val": "0"})
+                    st.rerun()
                 
                 st.write("---")
                 
-                # 2. ΑΝΑΛΥΤΙΚΑ ΕΞΟΔΑ
-                st.markdown("**⛽ Ράμπα Εξόδων Βάρδιας**")
-                st.session_state.expenses_text[key_exp_txt] = st.text_input(
-                    "Ανάλυση Εξόδων", 
-                    value=st.session_state.expenses_text[key_exp_txt], 
-                    placeholder="π.χ. Πετρέλαιο 50, Οξυγόνο 14",
-                    key=f"txt_exp_{key_exp_txt}"
-                )
+                # --- ΕΝΟΤΗΤΑ ΕΞΟΔΩΝ ---
+                st.markdown("**⛽ Έξοδα Βάρδιας**")
+                tot_exp = 0.0
                 
-                # Εδώ βάζεις το τελικό άθροισμα των εξόδων
-                st.session_state.expenses_num[key_exp_num] = st.number_input(
-                    "Σύνολο Εξόδων Βάρδιας (€)", 
-                    min_value=0.0, 
-                    value=float(st.session_state.expenses_num[key_exp_num]), 
-                    key=f"num_exp_{key_exp_num}"
-                )
+                # Εμφάνιση όλων των γραμμών εξόδων που έχουν δημιουργηθεί
+                for idx, item in enumerate(st.session_state.dynamic_exp[key_exp]):
+                    c_lbl, c_val = st.columns([2, 1])
+                    with c_lbl:
+                        item["label"] = st.text_input(f"Έξοδο", value=item["label"], key=f"lbl_exp_{key_exp}_{idx}", label_visibility="collapsed", placeholder="π.χ. Οξυγόνο")
+                    with c_val:
+                        item["val"] = st.text_input(f"Ποσό", value=item["val"], key=f"val_exp_{key_exp}_{idx}", label_visibility="collapsed", placeholder="Ποσό")
+                    
+                    # Καθαρισμός και άθροιση
+                    v_clean = str(item["val"]).replace("€", "").replace(",", ".").strip()
+                    try: tot_exp += float(v_clean) if v_clean else 0.0
+                    except ValueError: pass
+                
+                # Κουμπί για προσθήκη νέας γραμμής εξόδου
+                if st.button("➕ Προσθήκη Γραμμής Εξόδου", key=f"btn_add_exp_{key_exp}", use_container_width=True):
+                    st.session_state.dynamic_exp[key_exp].append({"label": "", "val": "0"})
+                    st.rerun()
                 
                 # ΤΕΛΙΚΟΙ ΥΠΟΛΟΓΙΣΜΟΙ
-                total_income = auto_income + st.session_state.income_num[key_inc_num]
-                total_net = total_income - st.session_state.expenses_num[key_exp_num]
+                total_income = auto_income + tot_extra_inc
+                total_net = total_income - tot_exp
                 
                 st.write("---")
-                st.markdown(f"**Συνολικά Έσοδα:** {total_income:,.2f} €")
+                st.markdown(f"**Συνολικά Έσοδα:** {total_income:,.2f} € | **Συνολικά Έξοδα:** {tot_exp:,.2f} €")
                 st.markdown(f"🏁 **Καθαρή Παράδοση:** <span style='font-size: 24px; font-weight: bold; color: #CD1818;'>{total_net:,.2f} €</span>", unsafe_allow_html=True)
             st.write("##")
 
@@ -406,4 +410,3 @@ elif menu == "👥 Διαθέσιμοι Διασώστες":
 elif menu == "🤝 Συνεργάτες":
     st.title("🤝 Συνεργάτες Εταιρείας")
     st.info("Αυτή η ενότητα θα υλοποιηθεί στα επόμενα βήματα.")
-
