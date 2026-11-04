@@ -302,3 +302,87 @@ elif menu == "📅 Ημερήσιο Πρόγραμμα (Ημερολόγιο)":
                         
                         st.write("#")
                         st.button("🗑️ Διαγραφή Διαδρομής", key=f"del_{trip['id']}", on_click=delete_trip, args=(trip['id'],), type="secondary")
+
+# --- 6. ΗΜΕΡΗΣΙΟ ΤΑΜΕΙΟ ΑΣΘΕΝΟΦΟΡΩΝ ---
+elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
+    st.title("💰 Ημερήσιο Ταμείο & Έλεγχος Πληρωμάτων")
+    st.subheader("Αυτόματος υπολογισμός και χειροκίνητη διαχείριση ταμείου ανά όχημα")
+    
+    # Επιλογή ημερομηνίας για έλεγχο οποιασδήποτε ημέρας του μήνα
+    selected_date = st.date_input("📆 Επιλογή Ημερομηνίας Ταμείου:", datetime.now().date(), key="t_date")
+    st.write("---")
+    
+    st.markdown(f"### 📊 Λογιστική Εικόνα για την ημέρα: **{selected_date.strftime('%d/%m/%Y')}**")
+    
+    # Αρχικοποίηση μνήμης για έξοδα και έξτρα έσοδα
+    if "expenses_dict" not in st.session_state:
+        st.session_state.expenses_dict = {}
+    if "extra_income_dict" not in st.session_state:
+        st.session_state.extra_income_dict = {}
+        
+    tabs = st.tabs([f"🔑 {name}" for name in current_names])
+    
+    for index, amb_name in enumerate(current_names):
+        with tabs[index]:
+            # 1. ΑΥΤΟΜΑΤΑ ΕΣΟΔΑ ΑΠΟ ΔΙΑΚΟΜΙΔΕΣ
+            amb_trips = [
+                t for t in st.session_state.trips_list 
+                if t['amb'] == amb_name and t['date'] == str(selected_date)
+            ]
+            auto_income = 0.0
+            for trip in amb_trips:
+                try:
+                    auto_income += float(trip.get('cost', 0) or 0)
+                except ValueError:
+                    pass
+            
+            # Κλειδιά αποθήκευσης ανά ημέρα και όχημα
+            expense_key = f"{selected_date}_{amb_name}"
+            extra_inc_key = f"{selected_date}_{amb_name}"
+            
+            if expense_key not in st.session_state.expenses_dict:
+                st.session_state.expenses_dict[expense_key] = 0.0
+            if extra_inc_key not in st.session_state.extra_income_dict:
+                st.session_state.extra_income_dict[extra_inc_key] = 0.0
+                
+            # Σχεδιασμός σε 3 Στήλες
+            c_inc, c_exp, c_net = st.columns(3)
+            
+            with c_inc:
+                st.markdown("### 💶 Ράμπα Εσόδων")
+                st.markdown(f"**Αυτόματα (από προγραμματισμό):** {auto_income:,.2f} €")
+                
+                # ΝΕΟ: Χειροκίνητο κουτάκι για επιπλέον έσοδα
+                saved_extra = st.session_state.extra_income_dict[extra_inc_key]
+                current_extra = st.number_input(
+                    "Έκτακτα / Επιπλέον Έσοδα (€)", 
+                    min_value=0.0, 
+                    value=float(saved_extra), 
+                    key=f"input_extra_{extra_inc_key}"
+                )
+                if current_extra != saved_extra:
+                    st.session_state.extra_income_dict[extra_inc_key] = current_extra
+                    st.rerun()
+                
+                total_income = auto_income + current_extra
+                st.markdown(f"**Συνολικά Έσοδα:** {total_income:,.2f} €")
+                
+            with c_exp:
+                st.markdown("### ⛽ Ράμπα Εξόδων")
+                saved_expense = st.session_state.expenses_dict[expense_key]
+                current_expense = st.number_input(
+                    "Καταγραφή Εξόδων (€)", 
+                    min_value=0.0, 
+                    value=float(saved_expense), 
+                    key=f"input_exp_{expense_key}"
+                )
+                if current_expense != saved_expense:
+                    st.session_state.expenses_dict[expense_key] = current_expense
+                    st.rerun()
+                    
+            with c_net:
+                st.markdown("### 🏁 Καθαρή Παράδοση")
+                total_net = total_income - current_expense
+                st.markdown(f"<div style='font-size: 32px; font-weight: bold; color: #CD1818; background-color: #F8F9FA; padding: 10px; border-radius: 5px; display: inline-block;'>{total_net:,.2f} €</div>", unsafe_allow_html=True)
+                st.caption("Καθαρό ποσό για παράδοση από το πλήρωμα.")
+            st.write("---")
