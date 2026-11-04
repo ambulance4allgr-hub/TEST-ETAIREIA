@@ -213,7 +213,7 @@ elif menu == "📝 Προσθήκη Διαδρομών":
             loc_from = st.text_input("📍 Τοποθεσία Παραλαβής (Από)", placeholder="π.χ. Οικία / Κλινική Α")
             loc_to = st.text_input("🏢 Τοποθεσία Προορισμού (Προς)", placeholder="π.χ. Νοσοκομείο Β")
             home_info = st.text_input("🏠 Πληροφορίες Οικίας", placeholder="π.χ. 2ος όροφος, στενό ασανσέρ")
-            pickup_mode = st.selectbox("🪑 Τρόπος Παραλαβής", ["Φορείο", "Καρέκλα", "Περιπατητικός", "Άλλο"])
+            pickup_mode = st.text_input("🪑 Τρόπος Παραλαβής", value="Φορείο", placeholder="π.χ. Φορείο, Καρέκλα, κλπ.")
             assigned_amb = st.selectbox("🚑 Επιλογή Ασθενοφόρου", current_names)
             notes = st.text_area("💬 Σχόλια / Επιπλέον Πληροφορίες", placeholder="π.χ. Χρειάζεται οξυγόνο κατά τη διαδρομή")
             
