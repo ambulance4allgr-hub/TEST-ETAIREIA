@@ -181,3 +181,65 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
                 st.write("---")
 
     live_timers_core()
+# --- 3. ΠΡΟΣΘΗΚΗ ΔΙΑΚΟΜΙΔΩΝ ---
+elif menu == "📝 Προσθήκη Διαδρομών":
+    st.title("📝 Καταχώρηση Νέας Διακομιδής")
+    st.subheader("Συμπληρώστε τα πλήρη στοιχεία για το ημερήσιο πρόγραμμα")
+    st.write("---")
+    
+    with st.form("new_trip_form", clear_on_submit=True):
+        c1, c2 = st.columns(2)
+        with c1:
+            patient = st.text_input("👤 Ονοματεπώνυμο Ασθενούς", placeholder="π.χ. Γεώργιος Παπαδόπουλος")
+            trip_date = st.date_input("📅 Ημερομηνία Διακομιδής", value=datetime.now().date())
+            
+            c_time1, c_time2 = st.columns(2)
+            with c_time1:
+                time_start = st.text_input("🕒 Ώρα Έναρξης", placeholder="π.χ. 09:30")
+            with c_time2:
+                time_end = st.text_input("🏁 Ώρα Λήξης / Άφιξης", placeholder="π.χ. 10:15")
+                
+            c_age, c_weight = st.columns(2)
+            with c_age:
+                age = st.text_input("🎂 Ηλικία Ασθενούς", placeholder="π.χ. 75")
+            with c_weight:
+                weight = st.text_input("⚖️ Βάρος (kg)", placeholder="π.χ. 80")
+                
+            reason = st.text_input("🩺 Λόγος Διακομιδής", placeholder="π.χ. Επανέλεγχος / Εξιτήριο")
+            cost = st.text_input("💶 Κόστος Διακομιδής (€)", placeholder="π.χ. 50")
+            
+        with c2:
+            loc_from = st.text_input("📍 Τοποθεσία Παραλαβής (Από)", placeholder="π.χ. Οικία / Κλινική Α")
+            loc_to = st.text_input("🏢 Τοποθεσία Προορισμού (Προς)", placeholder="π.χ. Νοσοκομείο Β")
+            home_info = st.text_input("🏠 Πληροφορίες Οικίας", placeholder="π.χ. 2ος όροφος, στενό ασανσέρ")
+            pickup_mode = st.selectbox("🪑 Τρόπος Παραλαβής", ["Φορείο", "Καρέκλα", "Περιπατητικός", "Άλλο"])
+            assigned_amb = st.selectbox("🚑 Επιλογή Ασθενοφόρου", current_names)
+            notes = st.text_area("💬 Σχόλια / Επιπλέον Πληροφορίες", placeholder="π.χ. Χρειάζεται οξυγόνο κατά τη διαδρομή")
+            
+        submit_btn = st.form_submit_button("💾 Αποθήκευση στο Πρόγραμμα", use_container_width=True)
+        
+        if submit_btn:
+            if patient.strip() and loc_from.strip() and loc_to.strip():
+                new_trip = {
+                    "id": str(uuid.uuid4()), 
+                    "date": str(trip_date),
+                    "time": time_start,
+                    "end": time_end,
+                    "patient": patient,
+                    "age": age,
+                    "weight": weight,
+                    "reason": reason,
+                    "from": loc_from,
+                    "to": loc_to,
+                    "home_info": home_info,
+                    "pickup_mode": pickup_mode,
+                    "cost": cost,
+                    "notes": notes,
+                    "amb": assigned_amb
+                }
+                st.session_state.trips_list.append(new_trip)
+                save_data()
+                st.success("✔️ Η διακομιδή καταχωρήθηκε μόνιμα με όλα τα στοιχεία!")
+                st.rerun()
+            else:
+                st.error("❌ Σφάλμα: Τα πεδία Ονοματεπώνυμο, Από και Προς είναι υποχρεωτικά.")
