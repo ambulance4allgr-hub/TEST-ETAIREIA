@@ -306,37 +306,36 @@ elif menu == "📅 Ημερήσιο Πρόγραμμα (Ημερολόγιο)":
 # --- 6. ΗΜΕΡΗΣΙΟ ΤΑΜΕΙΟ ΑΣΘΕΝΟΦΟΡΩΝ ---
 elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
     st.title("💰 Ημερήσιο Ταμείο Ασθενοφόρων")
-    st.subheader("Αναλυτικός έλεγχος εσόδων, εξόδων και καθαρής παράδοσης πληρωμάτων")
+    st.subheader("Αναλυτική καταγραφή εσόδων και εξόδων ανά ασθενή και ανά είδος εξόδου")
     
-    # Επιλογή ημερομηνίας για έλεγχο οποιασδήποτε ημέρας του μήνα
     selected_date = st.date_input("📆 Επιλογή Ημερομηνίας Ταμείου:", datetime.now().date(), key="t_date")
     st.write("---")
     
     st.markdown(f"### 📊 Οικονομικός Έλεγχος Στόλου: **{selected_date.strftime('%d/%m/%Y')}**")
     
-    # Αρχικοποίηση μνήμης για έξοδα και έξτρα έσοδα ανά ημέρα
-    if "expenses_dict" not in st.session_state:
-        st.session_state.expenses_dict = {}
-    if "extra_income_dict" not in st.session_state:
-        st.session_state.extra_income_dict = {}
+    # Αρχικοποίηση δομών για αναλυτικά έσοδα/έξοδα ανά ημέρα και όχημα αν δεν υπάρχουν
+    if "table_income_dict" not in st.session_state:
+        st.session_state.table_income_dict = {}
+    if "table_expense_dict" not in st.session_state:
+        st.session_state.table_expense_dict = {}
         
-    # Δημιουργία Grid 3 στηλών για να εμφανίζονται όλα τα οχήματα ταυτόχρονα όπως στο Live
     cols = st.columns(3)
     
     for i in range(1, 7):
         current_col = cols[(i-1) % 3]
         amb_name = current_names[i-1]
         
-        # Κλειδιά αποθήκευσης στη μνήμη ανά ημέρα και όχημα
-        expense_key = f"{selected_date}_{amb_name}"
-        extra_inc_key = f"{selected_date}_{amb_name}"
+        # Μοναδικά κλειδιά για κάθε όχημα και ημέρα
+        inc_key = f"inc_{selected_date}_{amb_name}"
+        exp_key = f"exp_{selected_date}_{amb_name}"
         
-        if expense_key not in st.session_state.expenses_dict:
-            st.session_state.expenses_dict[expense_key] = 0.0
-        if extra_inc_key not in st.session_state.extra_income_dict:
-            st.session_state.extra_income_dict[extra_inc_key] = 0.0
+        # Αν δεν υπάρχουν δεδομένα για αυτή την ημέρα, δημιουργούμε άδεια «μπλοκάκια»
+        if inc_key not in st.session_state.table_income_dict:
+            st.session_state.table_income_dict[inc_key] = [{"Ασθενής / Αιτιολογία": "Πρόγραμμα", "Ποσό (€)": 0.0}]
+        if exp_key not in st.session_state.table_expense_dict:
+            st.session_state.table_expense_dict[exp_key] = [{"Έξοδο / Αιτιολογία": "Πετρέλαιο", "Ποσό (€)": 0.0}]
             
-        # Υπολογισμός αυτόματων εσόδων από τις προγραμματισμένες διακομιδές της ημέρας
+        # Αυτόματος υπολογισμός εσόδων από την 3η σελίδα (Προσθήκη Διαδρομών)
         amb_trips = [
             t for t in st.session_state.trips_list 
             if t['amb'] == amb_name and t['date'] == str(selected_date)
@@ -348,41 +347,49 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
             except ValueError:
                 pass
                 
+        # Ενημέρωση της πρώτης γραμμής των αυτόματων εσόδων
+        st.session_state.table_income_dict[inc_key][0]["Ποσό (€)"] = float(auto_income)
+        
         with current_col:
-            # Σχεδιασμός του κάθε οχήματος σαν αυτόνομο κουτί ελέγχου
             with st.container(border=True):
                 st.markdown(f"### 🚑 {amb_name}")
-                st.markdown(f"**📈 Έσοδα Προγράμματος:** {auto_income:,.2f} € *(από {len(amb_trips)} διακ.)*")
                 
-                # Κουτάκι 1: Χειροκίνητα Έκτακτα Έσοδα
-                saved_extra = st.session_state.extra_income_dict[extra_inc_key]
-                current_extra = st.number_input(
-                    "➕ Έκτακτα Έσοδα (€)", 
-                    min_value=0.0, 
-                    value=float(saved_extra), 
-                    key=f"input_extra_{extra_inc_key}"
+                # 1. ΠΙΝΑΚΑΣ ΕΣΟΔΩΝ (ΜΠΛΟΚΑΚΙ)
+                st.markdown("**💶 Έσοδα (Διακομιδές / Έκτακτα)**")
+                edited_inc_df = st.data_editor(
+                    st.session_state.table_income_dict[inc_key],
+                    key=f"editor_inc_{inc_key}",
+                    num_rows="dynamic", # Επιτρέπει στον χρήστη να βάζει/σβήνει γραμμές με το κουμπί +
+                    use_container_width=True
                 )
-                if current_extra != saved_extra:
-                    st.session_state.extra_income_dict[extra_inc_key] = current_extra
-                    st.rerun()
-                    
-                # Κουτάκι 2: Χειροκίνητα Έξοδα Οχήματος
-                saved_expense = st.session_state.expenses_dict[expense_key]
-                current_expense = st.number_input(
-                    "⛽ Έξοδα Βάρδιας (€)", 
-                    min_value=0.0, 
-                    value=float(saved_expense), 
-                    key=f"input_exp_{expense_key}"
-                )
-                if current_expense != saved_expense:
-                    st.session_state.expenses_dict[expense_key] = current_expense
-                    st.rerun()
+                st.session_state.table_income_dict[inc_key] = edited_inc_df
                 
-                # Αυτόματος Υπολογισμός Συνόλου
-                total_income = auto_income + current_extra
-                total_net = total_income - current_expense
+                # 2. ΠΙΝΑΚΑΣ ΕΞΟΔΩΝ (ΜΠΛΟΚΑΚΙ)
+                st.markdown("**⛽ Έξοδα Βάρδιας**")
+                edited_exp_df = st.data_editor(
+                    st.session_state.table_expense_dict[exp_key],
+                    key=f"editor_exp_{exp_key}",
+                    num_rows="dynamic",
+                    use_container_width=True
+                )
+                st.session_state.table_expense_dict[exp_key] = edited_exp_df
+                
+                # ΥΠΟΛΟΓΙΣΜΟΣ ΣΥΝΟΛΩΝ
+                total_inc = sum(float(row.get("Ποσό (€)", 0) or 0) for row in edited_inc_df if row)
+                total_exp = sum(float(row.get("Ποσό (€)", 0) or 0) for row in edited_exp_df if row)
+                total_net = total_inc - total_exp
                 
                 st.write("---")
-                st.markdown(f"**Συνολικά Έσοδα:** {total_income:,.2f} €")
+                st.markdown(f"**Σύνολο Εσόδων:** {total_inc:,.2f} € | **Σύνολο Εξόδων:** {total_exp:,.2f} €")
                 st.markdown(f"🏁 **Καθαρή Παράδοση:** <span style='font-size: 24px; font-weight: bold; color: #CD1818;'>{total_net:,.2f} €</span>", unsafe_allow_html=True)
-            st.write("##") # Απόσταση μεταξύ των γραμμών
+            st.write("##")
+
+# --- 7. ΔΙΑΘΕΣΙΜΟΙ ΔΙΑΣΩΣΤΕΣ ---
+elif menu == "👥 Διαθέσιμοι Διασώστες":
+    st.title("👥 Μητρώο & Διαθεσιμότητα Διασωστών")
+    st.info("Αυτή η ενότητα θα υλοποιηθεί στα επόμενα βήματα.")
+
+# --- 8. ΣΥΝΕΡΓΑΤΕΣ ---
+elif menu == "🤝 Συνεργάτες":
+    st.title("🤝 Συνεργάτες Εταιρείας")
+    st.info("Αυτή η ενότητα θα υλοποιηθεί στα επόμενα βήματα.")
