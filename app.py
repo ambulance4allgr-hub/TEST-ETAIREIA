@@ -313,7 +313,6 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
     
     st.markdown(f"### 📊 Οικονομικός Έλεγχος Στόλου: **{selected_date.strftime('%d/%m/%Y')}**")
     
-    # Αρχικοποίηση δομών για αναλυτικά έσοδα/έξοδα ανά ημέρα και όχημα αν δεν υπάρχουν
     if "table_income_dict" not in st.session_state:
         st.session_state.table_income_dict = {}
     if "table_expense_dict" not in st.session_state:
@@ -325,17 +324,15 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
         current_col = cols[(i-1) % 3]
         amb_name = current_names[i-1]
         
-        # Μοναδικά κλειδιά για κάθε όχημα και ημέρα
         inc_key = f"inc_{selected_date}_{amb_name}"
         exp_key = f"exp_{selected_date}_{amb_name}"
         
-        # Αν δεν υπάρχουν δεδομένα για αυτή την ημέρα, δημιουργούμε άδεια «μπλοκάκια»
+        # Αρχικοποίηση με κείμενο ("0") αντί για αριθμό, ώστε να μην κρασάρει κατά την πληκτρολόγηση
         if inc_key not in st.session_state.table_income_dict:
-            st.session_state.table_income_dict[inc_key] = [{"Ασθενής / Αιτιολογία": "Πρόγραμμα", "Ποσό (€)": 0.0}]
+            st.session_state.table_income_dict[inc_key] = [{"Ασθενής / Αιτιολογία": "Πρόγραμμα", "Ποσό (€)": "0"}]
         if exp_key not in st.session_state.table_expense_dict:
-            st.session_state.table_expense_dict[exp_key] = [{"Έξοδο / Αιτιολογία": "Πετρέλαιο", "Ποσό (€)": 0.0}]
+            st.session_state.table_expense_dict[exp_key] = [{"Έξοδο / Αιτιολογία": "Πετρέλαιο", "Ποσό (€)": "0"}]
             
-        # Αυτόματος υπολογισμός εσόδων από την 3η σελίδα (Προσθήκη Διαδρομών)
         amb_trips = [
             t for t in st.session_state.trips_list 
             if t['amb'] == amb_name and t['date'] == str(selected_date)
@@ -347,24 +344,25 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
             except ValueError:
                 pass
                 
-        # Ενημέρωση της πρώτης γραμμής των αυτόματων εσόδων
-        st.session_state.table_income_dict[inc_key][0]["Ποσό (€)"] = float(auto_income)
+        # Ενημέρωση των αυτόματων εσόδων στην πρώτη γραμμή
+        if len(st.session_state.table_income_dict[inc_key]) > 0:
+            st.session_state.table_income_dict[inc_key][0]["Ποσό (€)"] = str(auto_income)
         
         with current_col:
             with st.container(border=True):
                 st.markdown(f"### 🚑 {amb_name}")
                 
-                # 1. ΠΙΝΑΚΑΣ ΕΣΟΔΩΝ (ΜΠΛΟΚΑΚΙ)
+                # 1. ΠΙΝΑΚΑΣ ΕΣΟΔΩΝ
                 st.markdown("**💶 Έσοδα (Διακομιδές / Έκτακτα)**")
                 edited_inc_df = st.data_editor(
                     st.session_state.table_income_dict[inc_key],
                     key=f"editor_inc_{inc_key}",
-                    num_rows="dynamic", # Επιτρέπει στον χρήστη να βάζει/σβήνει γραμμές με το κουμπί +
+                    num_rows="dynamic",
                     use_container_width=True
                 )
                 st.session_state.table_income_dict[inc_key] = edited_inc_df
                 
-                # 2. ΠΙΝΑΚΑΣ ΕΞΟΔΩΝ (ΜΠΛΟΚΑΚΙ)
+                # 2. ΠΙΝΑΚΑΣ ΕΞΟΔΩΝ
                 st.markdown("**⛽ Έξοδα Βάρδιας**")
                 edited_exp_df = st.data_editor(
                     st.session_state.table_expense_dict[exp_key],
@@ -374,13 +372,27 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
                 )
                 st.session_state.table_expense_dict[exp_key] = edited_exp_df
                 
-                # ΥΠΟΛΟΓΙΣΜΟΣ ΣΥΝΟΛΩΝ
-                total_inc = sum(float(row.get("Ποσό (€)", 0) or 0) for row in edited_inc_df if row)
-                total_exp = sum(float(row.get("Ποσό (€)", 0) or 0) for row in edited_exp_df if row)
+                # ΚΑΘΑΡΙΣΜΟΣ ΚΑΙ ΥΠΟΛΟΓΙΣΜΟΣ ΠΟΣΩΝ
+                total_inc = 0.0
+                if edited_inc_df:
+                    for row in edited_inc_df:
+                        if row and "Ποσό (€)" in row:
+                            val = str(row["Ποσό (€)"]).replace("€", "").replace(",", ".").strip()
+                            try: total_inc += float(val) if val else 0.0
+                            except ValueError: pass
+                            
+                total_exp = 0.0
+                if edited_exp_df:
+                    for row in edited_exp_df:
+                        if row and "Ποσό (€)" in row:
+                            val = str(row["Ποσό (€)"]).replace("€", "").replace(",", ".").strip()
+                            try: total_exp += float(val) if val else 0.0
+                            except ValueError: pass
+                            
                 total_net = total_inc - total_exp
                 
                 st.write("---")
-                st.markdown(f"**Σύνολο Εσόδων:** {total_inc:,.2f} € | **Σύνολο Εξόδων:** {total_exp:,.2f} €")
+                st.markdown(f"**Έσοδα:** {total_inc:,.2f} € | **Έξοδα:** {total_exp:,.2f} €")
                 st.markdown(f"🏁 **Καθαρή Παράδοση:** <span style='font-size: 24px; font-weight: bold; color: #CD1818;'>{total_net:,.2f} €</span>", unsafe_allow_html=True)
             st.write("##")
 
@@ -393,3 +405,4 @@ elif menu == "👥 Διαθέσιμοι Διασώστες":
 elif menu == "🤝 Συνεργάτες":
     st.title("🤝 Συνεργάτες Εταιρείας")
     st.info("Αυτή η ενότητα θα υλοποιηθεί στα επόμενα βήματα.")
+
