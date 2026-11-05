@@ -350,7 +350,7 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
         
     cols = st.columns(3)
     
-    for i in range(1, 7):
+    for i in range(1, 10):
         current_col = cols[(i-1) % 3]
         amb_name = current_names[i-1]
         
