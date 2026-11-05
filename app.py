@@ -349,7 +349,7 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
     if key_exp_main not in st.session_state.dynamic_exp: st.session_state.dynamic_exp[key_exp_main] = {}
         
     cols = st.columns(3)
-    
+    current_names = [st.session_state.get(f"name_{j}", f"Κενό {j}") for j in range(1, 10)]
     for i in range(1, 10):
         current_col = cols[(i-1) % 3]
         amb_name = current_names[i-1]
