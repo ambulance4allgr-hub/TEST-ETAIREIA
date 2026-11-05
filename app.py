@@ -21,7 +21,7 @@ def load_data():
         except:
             pass
     return {
-        "names": ["Τ12", "Τ16", "Τ16Β", "Τ16Δ", "Κενό 5", "Κενό 6"],
+         "names": ["T12", "T16", "T16B", "T16Δ", "Κενό 5", "Κενό 6", "Κενό 7", "Κενό 8", "Κενό 9"],
         "trips": [],
         "dynamic_inc": {},
         "dynamic_exp": {}
@@ -29,12 +29,15 @@ def load_data():
 
 def save_data():
     names_to_save = [
-        st.session_state.get("name_1", "Τ12"),
-        st.session_state.get("name_2", "Τ16"),
-        st.session_state.get("name_3", "Τ16Β"),
-        st.session_state.get("name_4", "Τ16Δ"),
+        st.session_state.get("name_1", "T12"),
+        st.session_state.get("name_2", "T16"),
+        st.session_state.get("name_3", "T16B"),
+        st.session_state.get("name_4", "T16Δ"),
         st.session_state.get("name_5", "Κενό 5"),
-        st.session_state.get("name_6", "Κενό 6")
+        st.session_state.get("name_6", "Κενό 6"),
+        st.session_state.get("name_7", "Κενό 7"),
+        st.session_state.get("name_8", "Κενό 8"),
+        st.session_state.get("name_9", "Κενό 9")
     ]
     data = {
         "names": names_to_save,
@@ -54,10 +57,13 @@ if "name_3" not in st.session_state: st.session_state["name_3"] = saved_data["na
 if "name_4" not in st.session_state: st.session_state["name_4"] = saved_data["names"][3]
 if "name_5" not in st.session_state: st.session_state["name_5"] = saved_data["names"][4]
 if "name_6" not in st.session_state: st.session_state["name_6"] = saved_data["names"][5]
+if "name_7" not in st.session_state: st.session_state["name_7"] = "Κενό 7"
+if "name_8" not in st.session_state: st.session_state["name_8"] = "Κενό 8"
+if "name_9" not in st.session_state: st.session_state["name_9"] = "Κενό 9"
 
 if "amb" not in st.session_state:
     st.session_state.amb = {}
-    for i in range(1, 7):
+    for i in range(1, 10):
         st.session_state.amb[i] = {
             "crew": "", "origin": "", "dest": "", "target": None, "total_mins": 20, "active": False, "sound_played": False
         }
