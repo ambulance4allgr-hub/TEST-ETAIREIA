@@ -51,15 +51,18 @@ def save_data():
 saved_data = load_data()
 
 # --- ΑΡΧΙΚΟΠΟΙΗΣΗ ΜΝΗΜΗΣ (SESSION STATE) ---
-if "name_1" not in st.session_state: st.session_state["name_1"] = saved_data["names"][0]
-if "name_2" not in st.session_state: st.session_state["name_2"] = saved_data["names"][1]
-if "name_3" not in st.session_state: st.session_state["name_3"] = saved_data["names"][2]
-if "name_4" not in st.session_state: st.session_state["name_4"] = saved_data["names"][3]
-if "name_5" not in st.session_state: st.session_state["name_5"] = saved_data["names"][4]
-if "name_6" not in st.session_state: st.session_state["name_6"] = saved_data["names"][5]
-if "name_7" not in st.session_state: st.session_state["name_7"] = "Κενό 7"
-if "name_8" not in st.session_state: st.session_state["name_8"] = "Κενό 8"
-if "name_9" not in st.session_state: st.session_state["name_9"] = "Κενό 9"
+# Φορτώνουμε τη λίστα των ονομάτων από το αρχείο, αν δεν υπάρχει βάζουμε τα έτοιμα 9
+current_names = saved_data.get("names", ["T12", "T16", "T16B", "T16Δ", "Κενό 5", "Κενό 6", "Κενό 7", "Κενό 8", "Κενό 9"])
+
+# Αν η λίστα στο αρχείο έχει λιγότερα από 9 ονόματα, της προσθέτουμε τα κενά που λείπουν
+while len(current_names) < 9:
+    current_names.append(f"Κενό {len(current_names) + 1}")
+
+# Αρχικοποίηση στη μνήμη (Session State) για όλα τα 9 ασθενοφόρα αυτόματα
+for idx in range(1, 10):
+    var_name = f"name_{idx}"
+    if var_name not in st.session_state:
+        st.session_state[var_name] = current_names[idx - 1]
 
 if "amb" not in st.session_state:
     st.session_state.amb = {}
