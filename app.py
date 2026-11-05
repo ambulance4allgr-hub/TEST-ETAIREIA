@@ -289,6 +289,7 @@ elif menu == "📅 Ημερήσιο Πρόγραμμα (Ημερολόγιο)":
     st.markdown(f"### 📋 Πλάνο Διαδρομών για την ημέρα: **{selected_date.strftime('%d/%m/%Y')}**")
     
     # Δημιουργία των 6 Tabs με τα ονόματα των ασθενοφόρων σας
+    current_names = [st.session_state.get(f"name_{j}", f"Κενό {j}") for j in range(1, 10)]
     tabs = st.tabs([f"🚑 {name}" for name in current_names])
     
     for index, amb_name in enumerate(current_names):
