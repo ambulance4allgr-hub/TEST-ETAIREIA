@@ -171,6 +171,7 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     @st.fragment(run_every=1.0)
     def live_timers_core():
         cols = st.columns(3)
+        current_names = [st.session_state.get(f"name_{j}", f"Κενό {j}") for j in range(1, 10)]
         for i in range(1, 10):
             current_col = cols[(i-1) % 3]
             a = st.session_state.amb[i]
