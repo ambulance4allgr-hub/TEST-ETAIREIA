@@ -143,6 +143,9 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
             st.text_input("Όχημα 4", key="name_4", on_change=save_data)
             st.text_input("Όχημα 5", key="name_5", on_change=save_data)
             st.text_input("Όχημα 6", key="name_6", on_change=save_data)
+            st.text_input("Όνομα 7", key="name_7", on_change=save_data)
+            st.text_input("Όνομα 8", key="name_8", on_change=save_data)
+            st.text_input("Όνομα 9", key="name_9", on_change=save_data)
 
     def play_alert_sound():
         sound_code = """
@@ -168,7 +171,7 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     @st.fragment(run_every=1.0)
     def live_timers_core():
         cols = st.columns(3)
-        for i in range(1, 7):
+        for i in range(1, 10):
             current_col = cols[(i-1) % 3]
             a = st.session_state.amb[i]
             name = current_names[i-1]
