@@ -134,6 +134,61 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     st.subheader("Παρακολούθηση ενεργών δρομολογίων σε πραγματικό χρόνο")
     st.write("---")
 
+ st.subheader("⚠️ Ειδοποιήσεις & Εκκρεμότητες Στόλου")
+    alert_triggered = False
+    today = datetime.now().date()
+
+    if "maintenance_data" in saved_data:
+        for amb, info in saved_data["maintenance_data"].items():
+            curr_km = info.get("current_km", 0)
+            next_srv = info.get("next_service_km", 0)
+            next_tyr = info.get("next_tyres_km", 0)
+            issue = info.get("active_issue", "")
+            
+            # 1. Έλεγχος Βλαβών (Λάμπες κτλ)
+            if issue:
+                st.error(f"🛠️ **{amb}**: Έχει αναφερθεί πρόβλημα: **{issue}**")
+                alert_triggered = True
+
+            # 2. Έλεγχος Service (Προειδοποίηση στα 1.000 χλμ πριν)
+            if next_srv > 0 and (next_srv - curr_km) <= 1000:
+                remaining = next_srv - curr_km
+                if remaining <= 0:
+                    st.error(f"🚨 **{amb}**: Υπερβήκε το όριο Service κατά {-remaining:,} χλμ! (Κοντέρ: {curr_km:,} / Όριο: {next_srv:,})")
+                else:
+                    st.warning(f"⏳ **{amb}**: Χρειάζεται Service σε {remaining:,} χλμ.")
+                alert_triggered = True
+
+            # 3. Έλεγχος Ελαστικών (Προειδοποίηση στα 2.000 χλμ πριν)
+            if next_tyr > 0 and (next_tyr - curr_km) <= 2000:
+                remaining_tyres = next_tyres_km = next_tyr - curr_km
+                if remaining_tyres <= 0:
+                    st.error(f"🚨 **{amb}**: Απαιτείται άμεση αλλαγή ελαστικών! Ξεπεράστηκε κατά {-remaining_tyres:,} χλμ.")
+                else:
+                    st.warning(f"🚗 **{amb}**: Αλλαγή ελαστικών σε {remaining_tyres:,} χλμ.")
+                alert_triggered = True
+
+            # 4. Έλεγχος Ημερομηνιών (ΚΤΕΟ, Ασφάλεια, Οδική)
+            for date_key, label in [("kteo_expiry", "📝 ΚΤΕΟ"), ("ins_expiry", "🔒 Ασφάλεια"), ("road_expiry", "🛠️ Οδική Βοήθεια")]:
+                date_str = info.get(date_key, "2026-01-01")
+                try:
+                    expiry_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                    days_left = (expiry_date - today).days
+                    
+                    if days_left <= 0:
+                        st.error(f"❌ **{amb}**: Έληξε το {label} στις {datetime.strptime(date_str, '%Y-%m-%d').strftime('%d/%m/%Y')} (Πριν από {-days_left} ημέρες)!")
+                        alert_triggered = True
+                    elif days_left <= 15:
+                        st.warning(f"⏳ **{amb}**: Το {label} λήγει σε {days_left} ημέρες ({datetime.strptime(date_str, '%Y-%m-%d').strftime('%d/%m/%Y')}).")
+                        alert_triggered = True
+                except:
+                    pass
+
+    if not alert_triggered:
+        st.success("✅ Όλα τα ασθενοφόρα είναι έτοιμα, ασφαλή και συντηρημένα!")
+
+    st.write("---")
+
     with st.expander("⚙️ Διαχείριση & Ονοματοδοσία Ασθενοφόρων"):
         st.info("Εδώ μπορείτε να μετονομάσετε τα οχήματα (π.χ. τα Κενά 5 και 6 όταν ενταχθούν νέα ασθενοφόρα).")
         c_name1, c_name2 = st.columns(2)
