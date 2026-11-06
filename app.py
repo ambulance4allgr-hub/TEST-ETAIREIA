@@ -152,7 +152,7 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
 
             # 2. Έλεγχος Service (Προειδοποίηση στα 1.000 χλμ πριν)
             if next_srv > 0 and (next_srv - curr_km) <= 1000:
-                remaining = next_srv - curr_km
+                remaining_tyres = next_tyr - curr_km
                 if remaining <= 0:
                     st.error(f"🚨 **{amb}**: Υπερβήκε το όριο Service κατά {-remaining:,} χλμ! (Κοντέρ: {curr_km:,} / Όριο: {next_srv:,})")
                 else:
