@@ -580,4 +580,3 @@ elif menu == "🚗 Καθημερινότητα Ασθενοφόρου":
             save_data()
             st.success(f"Καταχωρήθηκαν: +{km_today:,} χλμ ημέρας, Μέση Ταχύτητα: {avg_speed} km/h!")
             st.rerun()
-
