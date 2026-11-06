@@ -43,7 +43,9 @@ def save_data():
         "names": names_to_save,
         "trips": st.session_state.trips_list,
         "dynamic_inc": st.session_state.get("dynamic_inc", {}),
-        "dynamic_exp": st.session_state.get("dynamic_exp", {})
+        "dynamic_exp": st.session_state.get("dynamic_exp", {}),
+        "rescuers": st.session_state.rescuers,
+        "partners": st.session_state.partners
     }
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
@@ -78,6 +80,10 @@ if "dynamic_inc" not in st.session_state:
     st.session_state.dynamic_inc = saved_data.get("dynamic_inc", {})
 if "dynamic_exp" not in st.session_state: 
     st.session_state.dynamic_exp = saved_data.get("dynamic_exp", {})
+if "rescuers" not in st.session_state: 
+    st.session_state.rescuers = saved_data.get("rescuers", [{"name": "", "phone": ""}])
+if "partners" not in st.session_state: 
+    st.session_state.partners = saved_data.get("partners", [{"name": "", "phone": ""}])  
 if "trips_list" not in st.session_state:
     st.session_state.trips_list = saved_data["trips"]
     if "dynamic_inc" not in st.session_state: st.session_state.dynamic_inc = saved_data.get("dynamic_inc", {})
