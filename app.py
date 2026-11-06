@@ -86,16 +86,14 @@ if "dynamic_exp" not in st.session_state: st.session_state.dynamic_exp = saved_d
 # --- ΠΛΕΥΡΙΚΟ ΜΕΝΟΥ ---
 st.sidebar.markdown("### 🚑 Ambulance4all")
 menu = st.sidebar.radio("Μεταβείτε στην ενότητα:", [
-    "🏢 Εταιρικό Προφίλ",
-    "⏱️ Live Παρακολούθηση Στόλου",
+    "🏠 Εταιρικό Προφίλ", 
+    "⏱️ Live Παρακολούθηση Στόλου", 
     "📝 Προσθήκη Διαδρομών",
-    "🗓️ Ημερήσιο Πρόγραμμα (Ημερολόγιο)",
+    "📅 Ημερήσιο Πρόγραμμα (Ημερολόγιο)",
     "📈 Έσοδα - Έξοδα Εταιρείας",
     "💰 Ημερήσιο Ταμείο Ασθενοφόρων",
     "👥 Διαθέσιμοι Διασώστες",
-    "🤝 Συνεργάτες",
-    "📋 Αρχείο Ασθενοφόρων",
-    "🚗 Καθημερινότητα Ασθενοφόρου"
+    "🤝 Συνεργάτες"
 ])
 
 current_names = [
@@ -133,62 +131,6 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     st.title("⏱️ Ζωντανός Έλεγχος & Αντίστροφη Μέτρηση")
     st.subheader("Παρακολούθηση ενεργών δρομολογίων σε πραγματικό χρόνο")
     st.write("---")
-    st.subheader("⚠️ Ειδοποιήσεις & Εκκρεμότητες Στόλου")
-    alert_triggered = False
-    from datetime import datetime
-    today = datetime.now().date()
-
-    if "maintenance_data" in data:
-        for amb, info in data["maintenance_data"].items():
-            curr_km = info.get("current_km", 0)
-            next_srv = info.get("next_service_km", 0)
-            next_tyr = info.get("next_tyres_km", 0)
-            issue = info.get("active_issue", "")
-            
-            # 1. Έλεγχος Βλαβών (Λάμπες κτλ)
-            if issue:
-                st.error(f"🛠️ **{amb}**: Έχει αναφερθεί πρόβλημα: **{issue}**")
-                alert_triggered = True
-
-            # 2. Έλεγχος Service (Προειδοποίηση στα 1.000 χλμ πριν)
-            if next_srv > 0 and (next_srv - curr_km) <= 1000:
-                remaining = next_srv - curr_km
-                if remaining <= 0:
-                    st.error(f"🚨 **{amb}**: Υπερβήκε το όριο Service κατά {-remaining:,} χλμ! (Κοντέρ: {curr_km:,} / Όριο: {next_srv:,})")
-                else:
-                    st.warning(f"⏳ **{amb}**: Χρειάζεται Service σε {remaining:,} χλμ.")
-                alert_triggered = True
-
-            # 3. Έλεγχος Ελαστικών (Προειδοποίηση στα 2.000 χλμ πριν)
-            if next_tyr > 0 and (next_tyr - curr_km) <= 2000:
-                remaining_tyres = next_tyr - curr_km
-                if remaining_tyres <= 0:
-                    st.error(f"🚨 **{amb}**: Απαιτείται αλλαγή ελαστικών! Ξεπεράστηκε κατά {-remaining_tyres:,} χλμ.")
-                else:
-                    st.warning(f"🚗 **{amb}**: Αλλαγή ελαστικών σε {remaining_tyres:,} χλμ.")
-                alert_triggered = True
-
-            # 4. Έλεγχος Ημερομηνιών (ΚΤΕΟ, Ασφάλεια, Οδική)
-            for date_key, label in [("kteo_expiry", "📝 ΚΤΕΟ"), ("insurance_expiry", "🔒 Ασφάλεια"), ("road_assistance_expiry", "🛠️ Οδική Βοήθεια")]:
-                date_str = info.get(date_key, "2026-01-01")
-                try:
-                    expiry_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-                    days_left = (expiry_date - today).days
-                    
-                    if days_left <= 0:
-                        st.error(f"❌ **{amb}**: Έληξε το {label} στις {date_str} (Πριν από {-days_left} ημέρες)!")
-                        alert_triggered = True
-                    elif days_left <= 15:
-                        st.warning(f"⏳ **{amb}**: Το {label} λήγει σε {days_left} ημέρες ({date_str}).")
-                        alert_triggered = True
-                except:
-                    pass
-
-    if not alert_triggered:
-        st.success("✅ Όλα τα ασθενοφόρα είναι έτοιμα, ασφαλή και συντηρημένα!")
-
-    st.write("---")
-
 
     with st.expander("⚙️ Διαχείριση & Ονοματοδοσία Ασθενοφόρων"):
         st.info("Εδώ μπορείτε να μετονομάσετε τα οχήματα (π.χ. τα Κενά 5 και 6 όταν ενταχθούν νέα ασθενοφόρα).")
@@ -489,94 +431,3 @@ elif menu == "👥 Διαθέσιμοι Διασώστες":
 elif menu == "🤝 Συνεργάτες":
     st.title("🤝 Συνεργάτες Εταιρείας")
     st.info("Αυτή η ενότητα θα υλοποιηθεί στα επόμενα βήματα.")
-
-# --- 9. ΑΡΧΕΙΟ ΑΣΘΕΝΟΦΟΡΩΝ ---
-elif menu == "📋 Αρχείο Ασθενοφόρων":
-    st.title("📋 Αρχείο Ασθενοφόρων (Συντήρηση & Έγγραφα)")
-    
-    AMBULANCES = [st.session_state.get(f"name_{i}", f"Κενό {i}") for i in range(1, 10)]
-    selected_amb_archive = st.selectbox("Επιλέξτε Ασθενοφόρο για ενημέρωση εγγράφων:", AMBULANCES, key="archive_select")
-    
-    if "maintenance_data" not in data:
-        data["maintenance_data"] = {}
-        
-    current_data = data["maintenance_data"].get(selected_amb_archive, {
-        "next_service_km": 0, "next_tyres_km": 0, 
-        "insurance_expiry": "2026-01-01", "road_assistance_expiry": "2026-01-01", "kteo_expiry": "2026-01-01"
-    })
-    
-    with st.form("archive_form"):
-        st.subheader(f"⚙️ Σταθερά Όρια & Έγγραφα για το {selected_amb_archive}")
-        
-        from datetime import datetime
-        next_service = st.number_input("Όριο Χιλιομέτρων επόμενου Service:", value=int(current_data.get("next_service_km", 0)))
-        next_tyres = st.number_input("Όριο Χιλιομέτρων αλλαγής Ελαστικών:", value=int(current_data.get("next_tyres_km", 0)))
-        
-        ins_expiry = st.date_input("Λήξη Ασφάλειας:", value=datetime.strptime(current_data.get("insurance_expiry", "2026-01-01"), "%Y-%m-%d"))
-        road_expiry = st.date_input("Λήξη Οδικής Βοήθειας:", value=datetime.strptime(current_data.get("road_assistance_expiry", "2026-01-01"), "%Y-%m-%d"))
-        kteo_expiry = st.date_input("Λήξη ΚΤΕΟ (Σοβαρό):", value=datetime.strptime(current_data.get("kteo_expiry", "2026-01-01"), "%Y-%m-%d"))
-        
-        submit_archive = st.form_submit_button("💾 Αποθήκευση Στοιχείων Αρχείου")
-        
-        if submit_archive:
-            data["maintenance_data"][selected_amb_archive] = {
-                "current_km": data["maintenance_data"].get(selected_amb_archive, {}).get("current_km", 0),
-                "next_service_km": next_service,
-                "next_tyres_km": next_tyres,
-                "insurance_expiry": ins_expiry.strftime("%Y-%m-%d"),
-                "road_assistance_expiry": road_expiry.strftime("%Y-%m-%d"),
-                "kteo_expiry": kteo_expiry.strftime("%Y-%m-%d"),
-                "active_issue": data["maintenance_data"].get(selected_amb_archive, {}).get("active_issue", "")
-            }
-            save_data() 
-            st.success(f"Τα στοιχεία αρχείου για το {selected_amb_archive} αποθηκεύτηκαν!")
-
-# --- 10. ΚΑΘΗΜΕΡΙΝΟΤΗΤΑ ΑΣΘΕΝΟΦΟΡΟΥ ---
-elif menu == "🚗 Καθημερινότητα Ασθενοφόρου":
-    st.title("🚗 Καθημερινότητα Ασθενοφόρου (Καταγραφή Κίνησης)")
-    
-    AMBULANCES = [st.session_state.get(f"name_{i}", f"Κενό {i}") for i in range(1, 10)]
-    selected_amb_daily = st.selectbox("Επιλέξτε Ασθενοφόρο:", AMBULANCES, key="daily_select")
-    
-    if "maintenance_data" not in data:
-        data["maintenance_data"] = {}
-        
-    current_km_val = data["maintenance_data"].get(selected_amb_daily, {}).get("current_km", 0)
-    current_issue = data["maintenance_data"].get(selected_amb_daily, {}).get("active_issue", "")
-    
-    st.info(f"Oδόμετρο (Τελευταία χλμ): **{current_km_val:,} χλμ**")
-    if current_issue:
-        st.warning(f"⚠️ Τρέχουσα καταγεγραμμένη βλάβη: {current_issue}")
-        if st.button("🔧 Σήμανση ως Επισκευασμένο"):
-            data["maintenance_data"][selected_amb_daily]["active_issue"] = ""
-            save_data()
-            st.success("Η βλάβη διαγράφηκε!")
-            st.rerun()
-
-    with st.form("daily_km_form"):
-        st.subheader("📝 Καταχώρηση Στοιχείων Ημέρας")
-        log_date = st.date_input("Ημερομηνία Καταγραφής:")
-        new_km = st.number_input("Τρέχοντα Χιλιόμετρα Κοντέρ (Συνολικά):", min_value=int(current_km_val), value=int(current_km_val))
-        avg_speed = st.number_input("Μέση Ταχύτητα Ημέρας (km/h):", min_value=0.0, value=0.0, step=0.1)
-        reported_issue = st.text_input("Αναφορά Προβλήματος (π.χ. καμένη λάμπα, θόρυβος):", value="")
-        
-        submit_km = st.form_submit_button("➕ Καταχώρηση & Ενημέρωση Στόλου")
-        
-        if submit_km:
-            if selected_amb_daily not in data["maintenance_data"]:
-                data["maintenance_data"][selected_amb_daily] = {
-                    "next_service_km": 0, "next_tyres_km": 0, 
-                    "insurance_expiry": "2026-01-01", "road_assistance_expiry": "2026-01-01", "kteo_expiry": "2026-01-01"
-                }
-            
-            # Υπολογισμός χιλιομέτρων ημέρας
-            km_today = new_km - current_km_val
-            
-            # Ενημέρωση δεδομένων
-            data["maintenance_data"][selected_amb_daily]["current_km"] = new_km
-            if reported_issue.strip():
-                data["maintenance_data"][selected_amb_daily]["active_issue"] = reported_issue
-                
-            save_data()
-            st.success(f"Καταχωρήθηκαν: +{km_today:,} χλμ ημέρας, Μέση Ταχύτητα: {avg_speed} km/h!")
-            st.rerun()
