@@ -134,7 +134,7 @@ elif menu == "⏱️ Live Παρακολούθηση Στόλου":
     st.subheader("Παρακολούθηση ενεργών δρομολογίων σε πραγματικό χρόνο")
     st.write("---")
 
- st.subheader("⚠️ Ειδοποιήσεις & Εκκρεμότητες Στόλου")
+    st.subheader("⚠️ Ειδοποιήσεις & Εκκρεμότητες Στόλου")
     alert_triggered = False
     today = datetime.now().date()
 
