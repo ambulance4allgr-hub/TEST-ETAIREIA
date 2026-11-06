@@ -504,8 +504,171 @@ elif menu == "📋 Αρχείο Ασθενοφόρων":
                 
             st.success(f"✔️ Τα στοιχεία αρχείου για το όχημα {selected_amb} αποθηκεύτηκαν μόνιμα!")
 
-
 # --- 10. ΚΑΘΗΜΕΡΙΝΟΤΗΤΑ ΑΣΘΕΝΟΦΟΡΟΥ ---
 elif menu == "🚗 Καθημερινότητα Ασθενοφόρου":
-    st.title("🚗 Καθημερινότητα Ασθενοφόρου")
-    st.info("Εδώ θα σχεδιάσουμε την ημερομηνία, τα χιλιόμετρα κοντέρ, τη μέση ταχύτητα και τις βλάβες.")
+    st.title("🚗 Καθημερινότητα Ασθενοφόρου (Μηνιαίο Ημερολόγιο Κίνησης)")
+    st.subheader("Καθημερινή καταγραφή χιλιομέτρων, ταχύτητας και αναφορά βλαβών")
+    st.write("---")
+    
+    AMBULANCES = [st.session_state.get(f"name_{i}", f"Κενό {i}") for i in range(1, 10)]
+    selected_amb_daily = st.selectbox("🚑 Επιλέξτε Ασθενοφόρο:", AMBULANCES, key="daily_select")
+    
+    if "maintenance_data" not in saved_data:
+        saved_data["maintenance_data"] = {}
+    if "daily_logs" not in saved_data:
+        saved_data["daily_logs"] = {}
+        
+    current_maint = saved_data["maintenance_data"].get(selected_amb_daily, {
+        "next_service_km": 0, "next_tyres_km": 0,
+        "ins_expiry": "2026-01-01", "road_expiry": "2026-01-01", "kteo_expiry": "2026-01-01",
+        "current_km": 0, "active_issue": ""
+    })
+    
+    # Επιλογή Μήνα και Έτους
+    c_m1, c_m2 = st.columns(2)
+    with c_m1:
+        months_gr = ["Ιανουάριος", "Φεβρουάριος", "Μάρτιος", "Απρίλιος", "Μάιος", "Ιούνιος", "Ιούλιος", "Αύγουστος", "Σεπτέμβριος", "Οκτώβριος", "Νοέμβριος", "Δεκέμβριος"]
+        current_month_idx = datetime.now().month - 1
+        selected_month = st.selectbox("📅 Επιλογή Μήνα Προβολής:", months_gr, index=current_month_idx)
+        month_num = months_gr.index(selected_month) + 1
+    with c_m2:
+        selected_year = st.selectbox("📆 Επιλογή Έτους:", [2026, 2027, 2028], index=0)
+        
+    month_key = f"{selected_year}-{month_num:02d}"
+    
+    st.write("---")
+    
+    # Ζωντανή Ένδειξη για το Service
+    curr_km = current_maint.get("current_km", 0)
+    next_srv = current_maint.get("next_service_km", 0)
+    
+    if next_srv > 0:
+        rem_km = next_srv - curr_km
+        if rem_km <= 0:
+            st.error(f"🚨 Το όχημα έχει ξεπεράσει το όριο Service κατά {-rem_km:,} χλμ! (Τρέχοντα: {curr_km:,} / Όριο: {next_srv:,})")
+        elif rem_km <= 1000:
+            st.warning(f"⚠️ Προειδοποίηση: Απομένουν μόνο {rem_km:,} χλμ μέχρι το επόμενο Service!")
+        else:
+            st.success(f"✅ Κατάσταση Service: Απομένουν {rem_km:,} χλμ.")
+            
+    # Εμφάνιση ενεργής βλάβης αν υπάρχει
+    if current_maint.get("active_issue"):
+        st.error(f"🛠️ **Ενεργή Βλάβη στόλου:** {current_maint['active_issue']}")
+        if st.button("🔧 Σήμανση Προβλήματος ως Επισκευασμένο"):
+            saved_data["maintenance_data"][selected_amb_daily]["active_issue"] = ""
+            names_to_save = [st.session_state.get(f"name_{i}", f"Κενό {i}") for i in range(1, 10)]
+            data_to_write = {
+                "names": names_to_save, "trips": st.session_state.trips_list,
+                "dynamic_inc": st.session_state.get("dynamic_inc", {}), "dynamic_exp": st.session_state.get("dynamic_exp", {}),
+                "maintenance_data": saved_data["maintenance_data"], "daily_logs": saved_data.get("daily_logs", {})
+            }
+            with open(DATA_FILE, "w", encoding="utf-8") as f:
+                json.dump(data_to_write, f, ensure_ascii=False, indent=4)
+            st.success("Η βλάβη επισκευάστηκε!")
+            st.rerun()
+
+    # Φόρμα Καταχώρησης Ημέρας
+    with st.form("daily_log_form", clear_on_submit=True):
+        st.markdown("### 📝 Καταγραφή Στοιχείων Βάρδιας")
+        c_d1, c_d2 = st.columns(2)
+        with c_d1:
+            log_date = st.date_input("Ημερομηνία:", value=datetime.now().date())
+            input_km = st.number_input("Συνολικά Χιλιόμετρα Κοντέρ (τρέχουσα ένδειξη):", min_value=int(curr_km), value=int(curr_km))
+        with c_d2:
+            input_speed = st.number_input("Μέση Ταχύτητα Ημέρας (km/h):", min_value=0.0, value=0.0, step=0.1)
+            input_issue = st.text_input("Αναφορά Νέας Βλάβης (αν υπάρχει - π.χ. καμένη λάμπα):", value="")
+            
+        submit_daily = st.form_submit_button("💾 Αποθήκευση Ημέρας & Ενημέρωση Συστήματος", use_container_width=True)
+        
+        if submit_daily:
+            if selected_amb_daily not in saved_data["daily_logs"]:
+                saved_data["daily_logs"][selected_amb_daily] = {}
+            if month_key not in saved_data["daily_logs"][selected_amb_daily]:
+                saved_data["daily_logs"][selected_amb_daily][month_key] = {}
+                
+            date_str = str(log_date)
+            
+            # Αποθήκευση της ημέρας
+            saved_data["daily_logs"][selected_amb_daily][month_key][date_str] = {
+                "km_counter": input_km,
+                "avg_speed": input_speed,
+                "issue": input_issue
+            }
+            
+            # Ενημέρωση των γενικών τρεχόντων χιλιομέτρων και βλάβης του οχήματος
+            if input_km > curr_km:
+                saved_data["maintenance_data"][selected_amb_daily]["current_km"] = input_km
+            if input_issue.strip():
+                saved_data["maintenance_data"][selected_amb_daily]["active_issue"] = input_issue
+                
+            # Μόνιμη εγγραφή στο JSON
+            names_to_save = [st.session_state.get(f"name_{i}", f"Κενό {i}") for i in range(1, 10)]
+            data_to_write = {
+                "names": names_to_save,
+                "trips": st.session_state.trips_list,
+                "dynamic_inc": st.session_state.get("dynamic_inc", {}),
+                "dynamic_exp": st.session_state.get("dynamic_exp", {}),
+                "maintenance_data": saved_data["maintenance_data"],
+                "daily_logs": saved_data["daily_logs"]
+            }
+            with open(DATA_FILE, "w", encoding="utf-8") as f:
+                json.dump(data_to_write, f, ensure_ascii=False, indent=4)
+                
+            st.success("✔️ Τα στοιχεία της ημέρας καταχωρήθηκαν και οι στατιστικές ενημερώθηκαν!")
+            st.rerun()
+
+    # --- ΠΡΟΒΟΛΗ ΜΗΝΙΑΙΟΥ ΠΙΝΑΚΑ ΣΤΑΤΙΣΤΙΚΩΝ ---
+    st.write("---")
+    st.markdown(f"### 📊 Ημερολόγιο Κίνησης: {selected_month} {selected_year}")
+    
+    month_data = saved_data["daily_logs"].get(selected_amb_daily, {}).get(month_key, {})
+    
+    if month_data:
+        # Δημιουργία πίνακα για προβολή
+        table_rows = []
+        sorted_dates = sorted(month_data.keys())
+        
+        total_monthly_km = 0
+        speed_sum = 0.0
+        speed_count = 0
+        
+        # Υπολογισμός χιλιομέτρων ανά ημέρα (αφαίρεση από την προηγούμενη καταγραφή)
+        prev_km = None
+        
+        for d_str in sorted_dates:
+            day_info = month_data[d_str]
+            k_count = day_info["km_counter"]
+            speed = day_info["avg_speed"]
+            iss = day_info.get("issue", "-") or "-"
+            
+            # Μετατροπή ημερομηνίας σε dd/mm
+            try: date_obj = datetime.strptime(d_str, "%Y-%m-%d").strftime("%d/%m/%Y")
+            except: date_obj = d_str
+            
+            table_rows.append({
+                "Ημερομηνία": date_obj,
+                "Ένδειξη Κοντέρ (χλμ)": f"{k_count:,}",
+                "Μέση Ταχύτητα (km/h)": f"{speed} km/h",
+                "Παρατηρήσεις / Βλάβες": iss
+            })
+            
+            if speed > 0:
+                speed_sum += speed
+                speed_count += 1
+                
+        # Εμφάνιση του πίνακα
+        st.table(table_rows)
+        
+        # Υπολογισμός Συνολικών Στατιστικών Μήνα
+        avg_speed_monthly = speed_sum / speed_count if speed_count > 0 else 0.0
+        
+        st.markdown("#### 📈 Συνολικά Στατιστικά Μήνα")
+        c_stat1, c_stat2 = st.columns(2)
+        with c_stat1:
+            st.metric("🏁 Τελευταία Ένδειξη Κοντέρ", f"{curr_km:,} χλμ")
+        with c_stat2:
+            st.metric("🚀 Μέση Ταχύτητα Μήνα (Μ.Ο.)", f"{avg_speed_monthly:.1f} km/h")
+    else:
+        st.info(f"Δεν υπάρχουν καταγεγραμμένες βάρδιες για το όχημα {selected_amb_daily} τον {selected_month} του {selected_year}.")
+
+
