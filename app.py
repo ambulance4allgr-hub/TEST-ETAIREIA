@@ -436,8 +436,74 @@ elif menu == "🤝 Συνεργάτες":
 
 # --- 9. ΑΡΧΕΙΟ ΑΣΘΕΝΟΦΟΡΩΝ ---
 elif menu == "📋 Αρχείο Ασθενοφόρων":
-    st.title("📋 Αρχείο Ασθενοφόρων")
-    st.info("Εδώ θα σχεδιάσουμε τις ημερομηνίες για Ασφάλεια, Οδική, Service, ΚΤΕΟ και Λάστιχα.")
+    st.title("📋 Αρχείο Ασθενοφόρων (Συντήρηση & Έγγραφα)")
+    st.subheader("Ρύθμιση σταθερών ορίων και ημερομηνιών λήξης ανά όχημα")
+    st.write("---")
+    
+    # Διαβάζουμε δυναμικά τα ονόματα των 9 ασθενοφόρων
+    AMBULANCES = [st.session_state.get(f"name_{i}", f"Κενό {i}") for i in range(1, 10)]
+    selected_amb = st.selectbox("🚑 Επιλέξτε Ασθενοφόρο για ενημέρωση αρχείου:", AMBULANCES, key="arch_select")
+    
+    # Αρχικοποίηση maintenance_data στο saved_data αν δεν υπάρχει
+    if "maintenance_data" not in saved_data:
+        saved_data["maintenance_data"] = {}
+        
+    # Φόρτωση υπαρχόντων στοιχείων ή προεπιλεγμένων τιμών
+    current_maint = saved_data["maintenance_data"].get(selected_amb, {
+        "next_service_km": 0, "next_tyres_km": 0,
+        "ins_expiry": "2026-01-01", "road_expiry": "2026-01-01", "kteo_expiry": "2026-01-01",
+        "current_km": 0, "active_issue": ""
+    })
+    
+    with st.form("archive_management_form", clear_on_submit=False):
+        st.markdown(f"### ⚙️ Καρτέλα Στοιχείων: **{selected_amb}**")
+        
+        c_km, c_dates = st.columns(2)
+        with c_km:
+            st.markdown("#### 🚗 Χιλιομετρικά Όρια")
+            next_service = st.number_input("Όριο Χιλιομέτρων επόμενου Service:", min_value=0, value=int(current_maint.get("next_service_km", 0)))
+            next_tyres = st.number_input("Όριο Χιλιομέτρων αλλαγής Ελαστικών:", min_value=0, value=int(current_maint.get("next_tyres_km", 0)))
+            
+        with c_dates:
+            st.markdown("#### 📅 Ημερομηνίες Λήξης Εγγράφων")
+            
+            # Μετατροπή των κειμένων σε ημερομηνίες για το UI
+            def parse_date(d_str):
+                try: return datetime.strptime(d_str, "%Y-%m-%d").date()
+                except: return datetime.now().date()
+                
+            ins_exp = st.date_input("🔒 Λήξη Ασφάλειας:", value=parse_date(current_maint.get("ins_expiry", "2026-01-01")))
+            road_exp = st.date_input("🛠️ Λήξη Οδικής Βοήθειας:", value=parse_date(current_maint.get("road_expiry", "2026-01-01")))
+            kteo_exp = st.date_input("🚨 Λήξη ΚΤΕΟ (Σοβαρό):", value=parse_date(current_maint.get("kteo_expiry", "2026-01-01")))
+            
+        submit_arch = st.form_submit_button("💾 Αποθήκευση Στοιχείων Αρχείου", use_container_width=True)
+        
+        if submit_arch:
+            # Ενημερώνουμε τη δομή χωρίς να χάσουμε τα τρέχοντα χλμ ή τις βλάβες που θα μπούν στην καθημερινότητα
+            saved_data["maintenance_data"][selected_amb] = {
+                "next_service_km": next_service,
+                "next_tyres_km": next_tyres,
+                "ins_expiry": str(ins_exp),
+                "road_expiry": str(road_exp),
+                "kteo_expiry": str(kteo_exp),
+                "current_km": current_maint.get("current_km", 0),
+                "active_issue": current_maint.get("active_issue", "")
+            }
+            
+            # Επέκταση της save_data για να περιλαμβάνει το maintenance_data
+            names_to_save = [st.session_state.get(f"name_{i}", f"Κενό {i}") for i in range(1, 10)]
+            data_to_write = {
+                "names": names_to_save,
+                "trips": st.session_state.trips_list,
+                "dynamic_inc": st.session_state.get("dynamic_inc", {}),
+                "dynamic_exp": st.session_state.get("dynamic_exp", {}),
+                "maintenance_data": saved_data["maintenance_data"]
+            }
+            with open(DATA_FILE, "w", encoding="utf-8") as f:
+                json.dump(data_to_write, f, ensure_ascii=False, indent=4)
+                
+            st.success(f"✔️ Τα στοιχεία αρχείου για το όχημα {selected_amb} αποθηκεύτηκαν μόνιμα!")
+
 
 # --- 10. ΚΑΘΗΜΕΡΙΝΟΤΗΤΑ ΑΣΘΕΝΟΦΟΡΟΥ ---
 elif menu == "🚗 Καθημερινότητα Ασθενοφόρου":
