@@ -488,12 +488,86 @@ elif menu == "💰 Ημερήσιο Ταμείο Ασθενοφόρων":
 # --- 7. ΔΙΑΘΕΣΙΜΟΙ ΔΙΑΣΩΣΤΕΣ ---
 elif menu == "👥 Διαθέσιμοι Διασώστες":
     st.title("👥 Μητρώο & Διαθεσιμότητα Διασωστών")
-    st.info("Αυτή η ενότητα θα υλοποιηθεί στα επόμενα βήματα.")
+    st.subheader("Δυναμική λίστα τηλεφώνων και ονομάτων του πληρώματος")
+    st.write("---")
+    
+    if "rescuers" not in st.session_state or not st.session_state.rescuers:
+        st.session_state.rescuers = [{"name": "", "phone": ""}]
+        
+    with st.container(border=True):
+        st.markdown("### 📞 Τηлеφωνικός Κατάλογος Διασωστών")
+        st.info("Μπορείτε να προσθέσετε όσους διασώστες θέλετε. Πατήστε το ➕ για νέα γραμμή ή το 🗑️ για διαγραφή.")
+        
+        to_delete_rescuer = None
+        
+        for idx, rescuer in enumerate(st.session_state.rescuers):
+            c_name, c_phone, c_del = st.columns()
+            with c_name:
+                rescuer["name"] = st.text_input("Ονοματεπώνυμο", value=rescuer["name"], key=f"resc_name_{idx}", placeholder="Ονοματεπώνυμο Διασώστη", label_visibility="collapsed")
+            with c_phone:
+                rescuer["phone"] = st.text_input("Κινητό", value=rescuer["phone"], key=f"resc_phone_{idx}", placeholder="Κινητό Τηλέφωνο", label_visibility="collapsed")
+            with c_del:
+                if st.button("🗑️", key=f"del_resc_{idx}", use_container_width=True):
+                    to_delete_rescuer = idx
+                    
+        if to_delete_rescuer is not None:
+            st.session_state.rescuers.pop(to_delete_rescuer)
+            save_data()
+            st.rerun()
+            
+        st.write("---")
+        c_b1, c_b2 = st.columns(2)
+        with c_b1:
+            if st.button("➕ Προσθήκη Νέας Γραμμής Διασώστη", use_container_width=True):
+                st.session_state.rescuers.append({"name": "", "phone": ""})
+                save_data()
+                st.rerun()
+        with c_b2:
+            if st.button("💾 Οριστική Αποθήκευση Μητρώου", key="save_rescuers_btn", use_container_width=True, type="primary"):
+                save_data()
+                st.success("✔️ Το μητρώο διασωστών αποθηκεύτηκε μόνιμα!")
 
 # --- 8. ΣΥΝΕΡΓΑΤΕΣ ---
 elif menu == "🤝 Συνεργάτες":
     st.title("🤝 Συνεργάτες Εταιρείας")
-    st.info("Αυτή η ενότητα θα υλοποιηθεί στα επόμενα βήματα.")
+    st.subheader("Δυναμική λίστα εξωτερικών συνεργατών και εταιρειών")
+    st.write("---")
+    
+    if "partners" not in st.session_state or not st.session_state.partners:
+        st.session_state.partners = [{"name": "", "phone": ""}]
+        
+    with st.container(border=True):
+        st.markdown("### 🏢 Κατάλογος Συνεργατών & Εταιρειών")
+        st.info("Μπορείτε να προσθέσετε όσους συνεργάτες θέλετε. Πατήστε το ➕ για νέα γραμμή ή το 🗑️ για διαγραφή.")
+        
+        to_delete_partner = None
+        
+        for idx, partner in enumerate(st.session_state.partners):
+            c_name, c_phone, c_del = st.columns()
+            with c_name:
+                partner["name"] = st.text_input("Όνομα / Εταιρεία", value=partner["name"], key=f"part_name_{idx}", placeholder="Όνομα Συνεργάτη ή Εταιρείας", label_visibility="collapsed")
+            with c_phone:
+                partner["phone"] = st.text_input("Τηλέφωνο", value=partner["phone"], key=f"part_phone_{idx}", placeholder="Τηλέφωνο Επικοινωνίας", label_visibility="collapsed")
+            with c_del:
+                if st.button("🗑️", key=f"del_part_{idx}", use_container_width=True):
+                    to_delete_partner = idx
+                    
+        if to_delete_partner is not None:
+            st.session_state.partners.pop(to_delete_partner)
+            save_data()
+            st.rerun()
+            
+        st.write("---")
+        c_btn1, c_btn2 = st.columns(2)
+        with c_btn1:
+            if st.button("➕ Προσθήκη Νέας Γραμμής Συνεργάτη", use_container_width=True):
+                st.session_state.partners.append({"name": "", "phone": ""})
+                save_data()
+                st.rerun()
+        with c_btn2:
+            if st.button("💾 Οριστική Αποθήκευση Συνεργατών", key="save_partners_btn", use_container_width=True, type="primary"):
+                save_data()
+                st.success("✔️ Οι συνεργάτες αποθηκεύτηκαν μόνιμα!")
 
 # --- 9. ΑΡΧΕΙΟ ΑΣΘΕΝΟΦΟΡΩΝ ---
 elif menu == "📋 Αρχείο Ασθενοφόρων":
