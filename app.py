@@ -501,7 +501,7 @@ elif menu == "👥 Διαθέσιμοι Διασώστες":
         to_delete_rescuer = None
         
         for idx, rescuer in enumerate(st.session_state.rescuers):
-            c_name, c_phone, c_del = st.columns()
+            c_name, c_phone, c_del = st.columns(3)
             with c_name:
                 rescuer["name"] = st.text_input("Ονοματεπώνυμο", value=rescuer["name"], key=f"resc_name_{idx}", placeholder="Ονοματεπώνυμο Διασώστη", label_visibility="collapsed")
             with c_phone:
@@ -543,7 +543,7 @@ elif menu == "🤝 Συνεργάτες":
         to_delete_partner = None
         
         for idx, partner in enumerate(st.session_state.partners):
-            c_name, c_phone, c_del = st.columns()
+            c_name, c_phone, c_del = st.columns(3)
             with c_name:
                 partner["name"] = st.text_input("Όνομα / Εταιρεία", value=partner["name"], key=f"part_name_{idx}", placeholder="Όνομα Συνεργάτη ή Εταιρείας", label_visibility="collapsed")
             with c_phone:
