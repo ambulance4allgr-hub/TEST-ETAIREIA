@@ -495,7 +495,7 @@ elif menu == "👥 Διαθέσιμοι Διασώστες":
         st.session_state.rescuers = [{"name": "", "phone": ""}]
         
     with st.container(border=True):
-        st.markdown("### 📞 Τηлеφωνικός Κατάλογος Διασωστών")
+        st.markdown("### 📞 Τηλεφωνικός Κατάλογος Διασωστών")
         st.info("Μπορείτε να προσθέσετε όσους διασώστες θέλετε. Πατήστε το ➕ για νέα γραμμή ή το 🗑️ για διαγραφή.")
         
         to_delete_rescuer = None
